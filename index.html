@@ -314,7 +314,7 @@
                 <p>Núcleo de Altos Estudos Amazônicos</p>
                 <p>Faculdade de Computação — ICEN</p>
                 <div class="modal-separator"></div>
-                <p><a href="mailto:adagenor.ribeiro@gmail.com">adagenor.ribeiro@gmail.com</a></p>
+                <p><a href="/cdn-cgi/l/email-protection#3b5a5f5a5c5e555449154952595e5249547b5c565a525715585456"><span class="__cf_email__" data-cfemail="d2b3b6b3b5b7bcbda0fca0bbb0b7bba0bd92b5bfb3bbbefcb1bdbf">[email&#160;protected]</span></a></p>
             </div>
             <button id="modal-close" onmousedown="fecharSobre(event)">Fechar</button>
         </div>
@@ -330,7 +330,7 @@
         <div id="stats"><span id="word-count">0</span> palavras</div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         const editor = document.getElementById('editor');
         const wordCountDisplay = document.getElementById('word-count');
         let autoSaveTimer;
@@ -362,16 +362,6 @@
 
         async function saveToLocal() {
             localStorage.setItem('scriptum_data', editor.innerText);
-            // Se já tem um arquivo vinculado, atualiza ele silenciosamente
-            if (fileHandle) {
-                try {
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(editor.innerText);
-                    await writable.close();
-                } catch(e) {
-                    console.warn('Autosave no arquivo falhou:', e);
-                }
-            }
         }
 
         // Mantém o cursor visível ao digitar
@@ -444,98 +434,35 @@
             }
         }
 
-        // ── File System Access API ─────────────────────────────────────
-        let fileHandle = null; // handle do arquivo escolhido pelo usuário
+        // ── Salvamento via download (universal, sem erros de permissão) ──
+        let nomeArquivo = 'meu-texto.txt';
+        let fileHandle  = null;
 
-        // Salva no arquivo vinculado; se não houver, abre o seletor de pasta
-        async function menuSave() {
-            saveToLocal(); // sempre mantém backup no localStorage
-
-            try {
-                if (!fileHandle) {
-                    // Primeira vez: pede ao usuário onde e com que nome salvar
-                    fileHandle = await window.showSaveFilePicker({
-                        suggestedName: 'meu-texto.txt',
-                        types: [{
-                            description: 'Arquivo de texto',
-                            accept: { 'text/plain': ['.txt'] }
-                        }]
-                    });
-                }
-
-                // Escreve o conteúdo no arquivo
-                const writable = await fileHandle.createWritable();
-                await writable.write(editor.innerText);
-                await writable.close();
-
-                // Mostra o nome do arquivo no toast
-                showToast(`Salvo: ${fileHandle.name}`);
-
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    // Usuário cancelou o seletor — não é erro
-                    showToast('Salvamento cancelado.');
-                } else if (err.name === 'NotSupportedError' || typeof window.showSaveFilePicker === 'undefined') {
-                    // Browser não suporta a API — faz fallback para download
-                    downloadFallback();
-                } else {
-                    showToast('Erro ao salvar: ' + err.message);
-                }
-            }
+        function menuSave() {
+            saveToLocal();
+            fazerDownload(nomeArquivo);
         }
 
-        // Permite trocar o arquivo de destino ("Salvar como")
-        async function menuSaveAs() {
-            // Sugere o nome atual (se já houver arquivo vinculado) ou um padrão
-            const nomeSugerido = fileHandle ? fileHandle.name : 'meu-texto.txt';
-            const nomeDigitado = prompt('Nome do arquivo:', nomeSugerido);
-
-            // Usuário cancelou o prompt
+        function menuSaveAs() {
+            const nomeDigitado = prompt('Nome do arquivo:', nomeArquivo);
             if (nomeDigitado === null) return;
-
-            const nomeFormatado = nomeDigitado.trim() || nomeSugerido;
-            // Garante extensão .txt se o usuário não colocar nenhuma
-            const nomeFinal = nomeFormatado.includes('.') ? nomeFormatado : nomeFormatado + '.txt';
-
-            fileHandle = null; // força novo destino
-
-            if (typeof window.showSaveFilePicker === 'function') {
-                try {
-                    fileHandle = await window.showSaveFilePicker({
-                        suggestedName: nomeFinal,
-                        types: [{ description: 'Arquivo de texto', accept: { 'text/plain': ['.txt'] } }]
-                    });
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(editor.innerText);
-                    await writable.close();
-                    showToast(`Salvo: ${fileHandle.name}`);
-                } catch (err) {
-                    if (err.name === 'AbortError') showToast('Salvamento cancelado.');
-                    else showToast('Erro ao salvar: ' + err.message);
-                }
-            } else {
-                // Fallback: download com o nome digitado
-                const blob = new Blob([editor.innerText], { type: 'text/plain' });
-                const url  = URL.createObjectURL(blob);
-                const a    = document.createElement('a');
-                a.href     = url;
-                a.download = nomeFinal;
-                a.click();
-                URL.revokeObjectURL(url);
-                showToast(`Baixado: ${nomeFinal}`);
-            }
+            const nomeTrim  = nomeDigitado.trim() || nomeArquivo;
+            nomeArquivo     = nomeTrim.includes('.') ? nomeTrim : nomeTrim + '.txt';
+            fileHandle      = null;
+            fazerDownload(nomeArquivo);
         }
 
-        // Fallback: download simples como .txt
-        function downloadFallback() {
-            const blob = new Blob([editor.innerText], { type: 'text/plain' });
+        function fazerDownload(nome) {
+            const blob = new Blob([editor.innerText], { type: 'text/plain;charset=utf-8' });
             const url  = URL.createObjectURL(blob);
             const a    = document.createElement('a');
             a.href     = url;
-            a.download = 'meu-texto.txt';
+            a.download = nome;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast('Arquivo baixado (browser não suporta salvar em pasta).');
+            showToast('Salvo: ' + nome);
         }
 
         function menuExit() {
@@ -794,14 +721,4 @@
             const textNode = document.createTextNode(text);
             range.insertNode(textNode);
 
-            // Move o cursor para depois do texto inserido
-            range.setStartAfter(textNode);
-            range.setEndAfter(textNode);
-            selection.removeAllRanges();
-            selection.addRange(range);
-
-            updateStats();
-        });
-    </script>
-</body>
-</html>
+            // Move o cursor para de
