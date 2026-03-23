@@ -3,108 +3,320 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scriptum | Editor Minimalista</title>
+<title>Scriptum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#e8e4df;--page:#fcfaf7;--sh:0 2px 16px rgba(0,0,0,.13);--fg:#2c2c2c;--font:'Courier Prime','Courier New',monospace;--cur:#d44;}
-body.dark{--bg:#1a1a1a;--page:#212121;--sh:0 2px 24px rgba(0,0,0,.5);--fg:#e0e0e0;--cur:#bb86fc;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body,html{height:100%;background:var(--bg);color:var(--fg);font-family:var(--font);transition:background .4s,color .4s;}
+* { margin:0; padding:0; box-sizing:border-box; }
 
-#menu{position:fixed;top:0;left:0;width:100%;display:flex;gap:4px;padding:10px 20px;z-index:100;background:linear-gradient(to bottom,var(--bg) 60%,transparent);}
-.mbtn{background:none;border:none;color:var(--fg);font-family:var(--font);font-size:.85rem;padding:4px 12px;cursor:pointer;opacity:.75;transition:opacity .2s;letter-spacing:.05em;}
-.mbtn:hover{opacity:1;}
-.mitem{position:relative;}
-.drop{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--page);border:1px solid var(--fg);min-width:210px;flex-direction:column;z-index:200;box-shadow:0 4px 16px rgba(0,0,0,.1);}
-.drop.open{display:flex;}
-.drop button{background:none;border:none;color:var(--fg);font-family:var(--font);font-size:.82rem;padding:9px 16px;text-align:left;cursor:pointer;opacity:.75;display:flex;justify-content:space-between;gap:24px;transition:opacity .15s,background .15s;}
-.drop button:hover{opacity:1;background:rgba(128,128,128,.1);}
-.sep{height:1px;background:currentColor;opacity:.15;margin:2px 0;}
+body, html {
+    height: 100%;
+    background-image: repeating-conic-gradient(#888 0% 25%, #bbb 0% 50%);
+    background-size: 4px 4px;
+    font-family: 'Chicago', 'Geneva', 'Charcoal', Arial, sans-serif;
+    font-size: 12px;
+    overflow: hidden;
+}
 
-#wrap{padding-top:48px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
-#page{width:21cm;max-width:95vw;min-height:29.7cm;background:var(--page);box-shadow:var(--sh);margin:24px 0 60px;transition:background .4s,box-shadow .4s;}
-#editor{padding:2.5cm 2.5cm 2.5cm 2cm;min-height:29.7cm;outline:none;font-size:1.15rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;caret-color:var(--cur);}
+/* Janela principal */
+#window {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 860px;
+    max-width: 99vw;
+    height: calc(100vh - 40px);
+    background: #fff;
+    border: 2px solid #000;
+    box-shadow: 4px 4px 0 #000;
+    display: flex;
+    flex-direction: column;
+}
 
-#strig{position:fixed;bottom:0;right:0;width:150px;height:80px;z-index:10;}
-#stats{position:fixed;bottom:20px;right:30px;font-size:.8rem;opacity:0;transition:opacity .3s;pointer-events:none;}
-#strig:hover #stats{opacity:.5;}
+/* Barra de título */
+#titlebar {
+    height: 22px;
+    background: #fff;
+    border-bottom: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: default;
+    user-select: none;
+    flex-shrink: 0;
+}
+#titlebar::before, #titlebar::after {
+    content: '';
+    position: absolute;
+    top: 3px; bottom: 3px;
+    width: calc(50% - 70px);
+    background: repeating-linear-gradient(180deg,#000 0px,#000 1px,#fff 1px,#fff 2px);
+}
+#titlebar::before { left: 24px; }
+#titlebar::after  { right: 24px; }
+#titlebar span {
+    background: #fff;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 1;
+    letter-spacing: 0.5px;
+}
+#closebtn {
+    position: absolute;
+    left: 6px;
+    width: 13px; height: 13px;
+    border: 1.5px solid #000;
+    background: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px;
+    z-index: 2;
+}
+#closebtn:active { background: #000; }
 
-#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);align-items:center;justify-content:center;z-index:500;}
-#mbox{background:var(--page);color:var(--fg);font-family:var(--font);padding:36px 40px;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.18);}
-#mbox h2{font-size:1.5rem;letter-spacing:.08em;margin-bottom:4px;}
-#mbox .sub{font-size:.78rem;opacity:.5;margin-bottom:20px;}
-#mbox p{font-size:.88rem;line-height:1.8;opacity:.85;}
-#mbox .lbl{opacity:.5;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;}
-#mclose{margin-top:24px;background:none;border:1px solid currentColor;color:var(--fg);font-family:var(--font);font-size:.82rem;padding:6px 28px;cursor:pointer;opacity:.6;letter-spacing:.05em;transition:opacity .2s;}
-#mclose:hover{opacity:1;}
+/* Menu bar */
+#menubar {
+    height: 22px;
+    background: #fff;
+    border-bottom: 2px solid #000;
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+    flex-shrink: 0;
+}
+.mbtn {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 0 12px;
+    cursor: default;
+    display: flex; align-items: center;
+}
+.mbtn:hover, .mbtn.active { background: #000; color: #fff; }
+.mitem { position: relative; display: flex; }
+.drop {
+    display: none;
+    position: absolute;
+    top: 100%; left: 0;
+    background: #fff;
+    border: 1.5px solid #000;
+    box-shadow: 3px 3px 0 #000;
+    min-width: 190px;
+    flex-direction: column;
+    z-index: 200;
+}
+.drop.open { display: flex; }
+.drop button {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 5px 16px 5px 20px;
+    text-align: left;
+    cursor: default;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    white-space: nowrap;
+}
+.drop button:hover { background: #000; color: #fff; }
+.sep { height: 1px; background: #000; margin: 2px 0; opacity: 0.3; }
+
+/* Área de rolagem */
+#scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    background-image: repeating-conic-gradient(#ccc 0% 25%, #ddd 0% 50%);
+    background-size: 4px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0 40px;
+}
+
+/* Página A4 */
+#page {
+    width: 21cm;
+    max-width: 96%;
+    min-height: 29.7cm;
+    background: #fff;
+    border: 1px solid #999;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.25);
+}
+#editor {
+    padding: 2.5cm 2.5cm 2.5cm 2.0cm;
+    min-height: 29.7cm;
+    outline: none;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    caret-color: #000;
+}
+
+/* Barra de status */
+#statusbar {
+    height: 18px;
+    border-top: 1px solid #000;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 12px;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+.sdiv { width: 1px; height: 11px; background: #aaa; }
+
+/* Modal */
+#modal {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.3);
+    align-items: center; justify-content: center;
+    z-index: 500;
+}
+#mbox {
+    background: #fff;
+    border: 2px solid #000;
+    box-shadow: 4px 4px 0 #000;
+    width: 320px;
+    font-family: inherit;
+}
+#mbox-title {
+    height: 22px;
+    border-bottom: 1px solid #000;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 12px;
+    position: relative;
+}
+#mbox-title::before, #mbox-title::after {
+    content: '';
+    position: absolute;
+    top: 3px; bottom: 3px;
+    width: calc(50% - 45px);
+    background: repeating-linear-gradient(180deg,#000 0px,#000 1px,#fff 1px,#fff 2px);
+}
+#mbox-title::before { left: 8px; }
+#mbox-title::after  { right: 8px; }
+#mbox-title span { background:#fff; padding:0 8px; z-index:1; }
+#mbox-body { padding: 18px 20px 12px; text-align: center; line-height: 1.9; }
+#mbox-body .app-name { font-size: 16px; font-weight: bold; margin-bottom: 2px; }
+#mbox-body .version  { font-size: 11px; color: #666; margin-bottom: 10px; }
+#mbox-body p { font-size: 12px; }
+#mbox-footer { padding: 8px 16px 14px; display:flex; justify-content:center; border-top: 1px solid #ddd; }
+#mclose {
+    background: #fff; border: 2px solid #000;
+    font-family: inherit; font-size: 12px;
+    padding: 3px 28px; cursor: default;
+    box-shadow: 2px 2px 0 #000;
+}
+#mclose:active { background:#000; color:#fff; }
+
+/* Toast */
+#_t {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    background: #000; color: #fff;
+    font-family: inherit; font-size: 11px;
+    padding: 4px 16px; opacity: 0;
+    transition: opacity .3s; pointer-events: none; z-index: 999;
+    border: 1px solid #000;
+}
 </style>
 </head>
 <body>
 
-<nav id="menu">
-  <div class="mitem">
-    <button class="mbtn" id="bArq">Arquivo</button>
-    <div class="drop" id="dArq">
-      <button onmousedown="arq(event,'novo')">Novo <small>Ctrl+N</small></button>
-      <button onmousedown="arq(event,'abrir')">Abrir... <small>Ctrl+O</small></button>
-      <div class="sep"></div>
-      <button onmousedown="arq(event,'salvar')">Salvar <small>Ctrl+S</small></button>
-      <button onmousedown="arq(event,'salvaras')">Salvar como...</button>
-      <div class="sep"></div>
-      <button onmousedown="arq(event,'sobre')">Sobre o Scriptum...</button>
+<div id="window">
+    <div id="titlebar">
+        <div id="closebtn" onmousedown="fin(event)">&#9632;</div>
+        <span>Scriptum &#8212; <span id="fname">sem t&iacute;tulo</span></span>
     </div>
-  </div>
-  <div class="mitem">
-    <button class="mbtn" id="bEdt">Editar</button>
-    <div class="drop" id="dEdt">
-      <button onmousedown="edt(event,'desfazer')">Desfazer <small>Ctrl+Z</small></button>
-      <button onmousedown="edt(event,'refazer')">Refazer <small>Ctrl+Y</small></button>
-      <div class="sep"></div>
-      <button onmousedown="edt(event,'copiar')">Copiar <small>Ctrl+C</small></button>
-      <button onmousedown="edt(event,'colar')">Colar <small>Ctrl+V</small></button>
-      <button onmousedown="edt(event,'sel')">Selecionar tudo <small>Ctrl+A</small></button>
-      <div class="sep"></div>
-      <button onmousedown="edt(event,'dark')">Modo escuro <small>Ctrl+D</small></button>
-      <button onmousedown="edt(event,'full')">Tela cheia <small>Ctrl+F</small></button>
-    </div>
-  </div>
-  <button class="mbtn" onmousedown="fin(event)">Finalizar</button>
-</nav>
 
-<div id="wrap">
-  <div id="page">
-    <div id="editor" contenteditable="true" spellcheck="false"></div>
-  </div>
+    <div id="menubar">
+        <div class="mitem">
+            <button class="mbtn" id="bArq">Arquivo</button>
+            <div class="drop" id="dArq">
+                <button onmousedown="arq(event,'novo')">Novo <small>&#8984;N</small></button>
+                <button onmousedown="arq(event,'abrir')">Abrir... <small>&#8984;O</small></button>
+                <div class="sep"></div>
+                <button onmousedown="arq(event,'salvar')">Salvar <small>&#8984;S</small></button>
+                <button onmousedown="arq(event,'salvaras')">Salvar como...</button>
+                <div class="sep"></div>
+                <button onmousedown="arq(event,'sobre')">Sobre o Scriptum...</button>
+            </div>
+        </div>
+        <div class="mitem">
+            <button class="mbtn" id="bEdt">Editar</button>
+            <div class="drop" id="dEdt">
+                <button onmousedown="edt(event,'desfazer')">Desfazer <small>&#8984;Z</small></button>
+                <button onmousedown="edt(event,'refazer')">Refazer <small>&#8984;Y</small></button>
+                <div class="sep"></div>
+                <button onmousedown="edt(event,'copiar')">Copiar <small>&#8984;C</small></button>
+                <button onmousedown="edt(event,'colar')">Colar <small>&#8984;V</small></button>
+                <button onmousedown="edt(event,'sel')">Selecionar tudo <small>&#8984;A</small></button>
+                <div class="sep"></div>
+                <button onmousedown="edt(event,'dark')">Modo escuro</button>
+                <button onmousedown="edt(event,'full')">Tela cheia <small>&#8984;F</small></button>
+            </div>
+        </div>
+        <button class="mbtn" onmousedown="fin(event)">Fechar</button>
+    </div>
+
+    <div id="scroll-area">
+        <div id="page">
+            <div id="editor" contenteditable="true" spellcheck="false"></div>
+        </div>
+    </div>
+
+    <div id="statusbar">
+        <span id="wc">0 palavras</span>
+        <div class="sdiv"></div>
+        <span id="chars">0 caracteres</span>
+        <div class="sdiv"></div>
+        <span id="saved">&#10003; salvo</span>
+    </div>
 </div>
 
-<div id="strig"><div id="stats"><span id="wc">0</span> palavras</div></div>
 <input type="file" id="finput" accept=".txt,.md" style="display:none">
+<div id="_t"></div>
 
 <div id="modal">
-  <div id="mbox">
-    <h2>Scriptum</h2>
-    <div class="sub">Editor Minimalista &mdash; v1.0</div>
-    <div class="sep"></div>
-    <p class="lbl">Autor</p>
-    <p>Prof. Adagenor Lobato Ribeiro</p>
-    <p>Universidade Federal do Par&aacute;</p>
-    <p>N&uacute;cleo de Altos Estudos Amaz&ocirc;nicos</p>
-    <p>Faculdade de Computa&ccedil;&atilde;o &mdash; ICEN</p>
-    <button id="mclose" onmousedown="fechaModal(event)">Fechar</button>
-  </div>
+    <div id="mbox">
+        <div id="mbox-title"><span>Sobre o Scriptum</span></div>
+        <div id="mbox-body">
+            <p class="app-name">Scriptum</p>
+            <p class="version">Editor Minimalista &mdash; v1.0</p>
+            <div class="sep"></div>
+            <p><b>Prof. Adagenor Lobato Ribeiro</b></p>
+            <p>Universidade Federal do Par&aacute;</p>
+            <p>N&uacute;cleo de Altos Estudos Amaz&ocirc;nicos</p>
+            <p>Faculdade de Computa&ccedil;&atilde;o &mdash; ICEN</p>
+        </div>
+        <div id="mbox-footer">
+            <button id="mclose" onmousedown="fechaModal(event)">OK</button>
+        </div>
+    </div>
 </div>
 
 <script>
-var ed   = document.getElementById('editor');
-var wc   = document.getElementById('wc');
-var dArq = document.getElementById('dArq');
-var dEdt = document.getElementById('dEdt');
-var bArq = document.getElementById('bArq');
-var bEdt = document.getElementById('bEdt');
-var nome = 'meu-texto.txt';
-var ssel = null;
+var ed    = document.getElementById('editor');
+var wcEl  = document.getElementById('wc');
+var chEl  = document.getElementById('chars');
+var fnEl  = document.getElementById('fname');
+var svEl  = document.getElementById('saved');
+var dArq  = document.getElementById('dArq');
+var dEdt  = document.getElementById('dEdt');
+var bArq  = document.getElementById('bArq');
+var bEdt  = document.getElementById('bEdt');
+var nome  = 'sem-titulo.txt';
+var ssel  = null;
 var timer;
 
 window.onload = function() {
@@ -116,7 +328,8 @@ window.onload = function() {
 ed.addEventListener('input', function() {
     clearTimeout(timer);
     stats();
-    timer = setTimeout(salvaLocal, 5000);
+    svEl.innerText = '...';
+    timer = setTimeout(function() { salvaLocal(); svEl.innerText = '\u2713 salvo'; }, 5000);
 });
 
 function salvaLocal() {
@@ -125,50 +338,49 @@ function salvaLocal() {
 
 function stats() {
     var t = ed.innerText.trim();
-    wc.innerText = t ? t.split(/\s+/).length : 0;
+    var w = t ? t.split(/\s+/).length : 0;
+    var c = ed.innerText.replace(/\n/g,'').length;
+    wcEl.innerText = w + (w === 1 ? ' palavra' : ' palavras');
+    chEl.innerText = c + ' caracteres';
 }
 
 ed.addEventListener('mouseup', ss);
-ed.addEventListener('keyup', ss);
-ed.addEventListener('blur', ss);
+ed.addEventListener('keyup',   ss);
+ed.addEventListener('blur',    ss);
+function ss() { var s=window.getSelection(); if(s&&s.rangeCount) ssel=s.getRangeAt(0).cloneRange(); }
+function rs() { ed.focus(); if(ssel){var s=window.getSelection();s.removeAllRanges();s.addRange(ssel);} }
 
-function ss() {
-    var s = window.getSelection();
-    if (s && s.rangeCount) ssel = s.getRangeAt(0).cloneRange();
-}
-
-function rs() {
-    ed.focus();
-    if (ssel) { var s = window.getSelection(); s.removeAllRanges(); s.addRange(ssel); }
-}
-
+// Dropdowns
 bArq.addEventListener('mousedown', function(e) {
     e.preventDefault();
-    dEdt.classList.remove('open');
+    bArq.classList.toggle('active');
+    dEdt.classList.remove('open'); bEdt.classList.remove('active');
     dArq.classList.toggle('open');
 });
-
 bEdt.addEventListener('mousedown', function(e) {
     e.preventDefault();
-    dArq.classList.remove('open');
+    bEdt.classList.toggle('active');
+    dArq.classList.remove('open'); bArq.classList.remove('active');
     dEdt.classList.toggle('open');
 });
-
 document.addEventListener('mousedown', function(e) {
-    if (!bArq.contains(e.target) && !dArq.contains(e.target)) dArq.classList.remove('open');
-    if (!bEdt.contains(e.target) && !dEdt.contains(e.target)) dEdt.classList.remove('open');
+    if (!bArq.contains(e.target)&&!dArq.contains(e.target)) { dArq.classList.remove('open'); bArq.classList.remove('active'); }
+    if (!bEdt.contains(e.target)&&!dEdt.contains(e.target)) { dEdt.classList.remove('open'); bEdt.classList.remove('active'); }
 });
 
+// Menu Arquivo
 function arq(e, cmd) {
     e.preventDefault();
-    dArq.classList.remove('open');
+    dArq.classList.remove('open'); bArq.classList.remove('active');
+
     if (cmd === 'novo') {
-        if (ed.innerText.trim() && !confirm('Criar novo documento? O texto atual sera perdido.')) return;
+        if (ed.innerText.trim() && !confirm('Criar novo documento?\nO texto atual sera perdido.')) return;
         ed.innerText = '';
-        nome = 'meu-texto.txt';
-        stats();
-        ed.focus();
+        nome = 'sem-titulo.txt';
+        fnEl.innerText = 'sem titulo';
+        stats(); ed.focus();
         toast('Novo documento.');
+
     } else if (cmd === 'abrir') {
         if (window.showOpenFilePicker) {
             window.showOpenFilePicker({
@@ -180,8 +392,8 @@ function arq(e, cmd) {
                     f.text().then(function(txt) {
                         ed.innerText = txt;
                         nome = h.name;
-                        stats();
-                        ed.focus();
+                        fnEl.innerText = h.name;
+                        stats(); ed.focus();
                         toast('Aberto: ' + h.name);
                     });
                 });
@@ -191,25 +403,31 @@ function arq(e, cmd) {
         } else {
             document.getElementById('finput').click();
         }
+
     } else if (cmd === 'salvar') {
         salvaLocal();
         dl(nome);
+
     } else if (cmd === 'salvaras') {
         var n = prompt('Nome do arquivo:', nome);
         if (!n) return;
         n = n.trim();
-        if (n.indexOf('.') === -1) n = n + '.txt';
+        if (n.indexOf('.') === -1) n += '.txt';
         nome = n;
+        fnEl.innerText = n;
         salvaLocal();
         dl(nome);
+
     } else if (cmd === 'sobre') {
         document.getElementById('modal').style.display = 'flex';
     }
 }
 
+// Menu Editar
 function edt(e, cmd) {
     e.preventDefault();
-    dEdt.classList.remove('open');
+    dEdt.classList.remove('open'); bEdt.classList.remove('active');
+
     if (cmd === 'desfazer') {
         ed.focus(); document.execCommand('undo'); stats();
     } else if (cmd === 'refazer') {
@@ -221,126 +439,105 @@ function edt(e, cmd) {
             navigator.clipboard.writeText(txt)
                 .then(function() { toast('Copiado.'); })
                 .catch(function() { document.execCommand('copy'); toast('Copiado.'); });
-        } else {
-            toast('Selecione um trecho primeiro.');
-        }
+        } else { toast('Selecione um trecho primeiro.'); }
     } else if (cmd === 'colar') {
         rs();
         navigator.clipboard.readText().then(function(txt) {
-            var sel = window.getSelection();
-            if (!sel.rangeCount) return;
-            var r = sel.getRangeAt(0);
-            r.deleteContents();
-            var node = document.createTextNode(txt);
-            r.insertNode(node);
-            r.setStartAfter(node);
-            r.setEndAfter(node);
-            sel.removeAllRanges();
-            sel.addRange(r);
-            ssel = r.cloneRange();
-            stats();
-            toast('Colado.');
-        }).catch(function() { toast('Use Ctrl+V para colar.'); });
+            var sel = window.getSelection(); if (!sel.rangeCount) return;
+            var r = sel.getRangeAt(0); r.deleteContents();
+            var node = document.createTextNode(txt); r.insertNode(node);
+            r.setStartAfter(node); r.setEndAfter(node);
+            sel.removeAllRanges(); sel.addRange(r);
+            ssel = r.cloneRange(); stats(); toast('Colado.');
+        }).catch(function() { toast('Use Cmd+V para colar.'); });
     } else if (cmd === 'sel') {
         ed.focus();
-        var r = document.createRange();
-        r.selectNodeContents(ed);
-        var s = window.getSelection();
-        s.removeAllRanges();
-        s.addRange(r);
-        ssel = r.cloneRange();
-        toast('Tudo selecionado.');
+        var r = document.createRange(); r.selectNodeContents(ed);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        ssel = r.cloneRange(); toast('Tudo selecionado.');
     } else if (cmd === 'dark') {
-        document.body.classList.toggle('dark');
+        document.body.classList.toggle('dark-mode');
+        var dm = document.body.classList.contains('dark-mode');
+        document.getElementById('window').style.background = dm ? '#1a1a1a' : '';
+        document.getElementById('page').style.background   = dm ? '#222' : '#fff';
+        document.getElementById('page').style.borderColor  = dm ? '#444' : '#999';
+        ed.style.color = dm ? '#e0e0e0' : '#000';
+        ed.style.caretColor = dm ? '#bb86fc' : '#000';
     } else if (cmd === 'full') {
         if (!document.fullscreenElement) document.documentElement.requestFullscreen();
         else document.exitFullscreen();
     }
 }
 
+// Fechar
 function fin(e) {
-    e.preventDefault();
-    if (confirm('Deseja finalizar?\nO documento sera salvo automaticamente.')) {
-        salvaLocal();
-        window.close();
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:monospace;opacity:.5">Sessao encerrada.</div>';
+    if (e) e.preventDefault();
+    if (confirm('Fechar o Scriptum?\nO texto sera salvo automaticamente.')) {
+        salvaLocal(); window.close();
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:monospace;font-size:12px;">Sessao encerrada.</div>';
     }
 }
 
+// Download
 function dl(n) {
     var b = new Blob([ed.innerText], { type: 'text/plain;charset=utf-8' });
     var u = URL.createObjectURL(b);
     var a = document.createElement('a');
-    a.href = u;
-    a.download = n;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(u);
+    a.href = u; a.download = n;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(u);
     toast('Salvo: ' + n);
+    svEl.innerText = '\u2713 salvo';
 }
 
+// Modal
 function fechaModal(e) {
     if (e) e.preventDefault();
     document.getElementById('modal').style.display = 'none';
     ed.focus();
 }
-
 document.getElementById('modal').addEventListener('mousedown', function(e) {
     if (e.target.id === 'modal') fechaModal(e);
 });
 
+// Abrir fallback
 document.getElementById('finput').addEventListener('change', function(e) {
-    var f = e.target.files[0];
-    if (!f) return;
+    var f = e.target.files[0]; if (!f) return;
     var r = new FileReader();
     r.onload = function(ev) {
         ed.innerText = ev.target.result;
-        nome = f.name;
-        stats();
-        ed.focus();
-        toast('Aberto: ' + f.name);
+        nome = f.name; fnEl.innerText = f.name;
+        stats(); ed.focus(); toast('Aberto: ' + f.name);
     };
-    r.readAsText(f);
-    e.target.value = '';
+    r.readAsText(f); e.target.value = '';
 });
 
+// Toast
 function toast(msg) {
     var t = document.getElementById('_t');
-    if (!t) {
-        t = document.createElement('div');
-        t.id = '_t';
-        t.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--page);font-family:var(--font);font-size:.8rem;padding:6px 18px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;';
-        document.body.appendChild(t);
-    }
-    t.innerText = msg;
-    t.style.opacity = '.9';
+    t.innerText = msg; t.style.opacity = '.95';
     clearTimeout(t._t);
     t._t = setTimeout(function() { t.style.opacity = '0'; }, 2200);
 }
 
+// Atalhos
 document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 'n') { e.preventDefault(); arq(e, 'novo'); }
-    if (e.ctrlKey && e.key === 'o') { e.preventDefault(); arq(e, 'abrir'); }
-    if (e.ctrlKey && e.key === 's') { e.preventDefault(); arq(e, 'salvar'); }
-    if (e.ctrlKey && e.key === 'd') { e.preventDefault(); edt(e, 'dark'); }
-    if (e.ctrlKey && e.key === 'f') { e.preventDefault(); edt(e, 'full'); }
+    var mod = e.metaKey || e.ctrlKey;
+    if (mod && e.key === 'n') { e.preventDefault(); arq(e, 'novo'); }
+    if (mod && e.key === 'o') { e.preventDefault(); arq(e, 'abrir'); }
+    if (mod && e.key === 's') { e.preventDefault(); arq(e, 'salvar'); }
+    if (mod && e.key === 'f') { e.preventDefault(); edt(e, 'full'); }
 });
 
+// Colar puro
 ed.addEventListener('paste', function(e) {
     e.preventDefault();
     var txt = e.clipboardData.getData('text/plain');
-    var sel = window.getSelection();
-    if (!sel.rangeCount) return;
-    var r = sel.getRangeAt(0);
-    r.deleteContents();
-    var node = document.createTextNode(txt);
-    r.insertNode(node);
-    r.setStartAfter(node);
-    r.setEndAfter(node);
-    sel.removeAllRanges();
-    sel.addRange(r);
-    stats();
+    var sel = window.getSelection(); if (!sel.rangeCount) return;
+    var r = sel.getRangeAt(0); r.deleteContents();
+    var node = document.createTextNode(txt); r.insertNode(node);
+    r.setStartAfter(node); r.setEndAfter(node);
+    sel.removeAllRanges(); sel.addRange(r); stats();
 });
 </script>
 </body>
