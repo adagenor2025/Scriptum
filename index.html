@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scriptum | Editor Minimalista</title>
+
+    <!-- FIX 1: Import das fontes adicionado -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #e8e4df;
+            --page-color: #fcfaf7;
+            --page-shadow: 0 2px 16px rgba(0,0,0,0.13);
+            --text-color: #2c2c2c;
+            --font-family: 'Courier Prime', 'JetBrains Mono', monospace;
+            --cursor-color: #d44;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --page-color: #212121;
+            --page-shadow: 0 2px 24px rgba(0,0,0,0.5);
+            --text-color: #e0e0e0;
+            --cursor-color: #bb86fc;
+        }
+
+        /* FIX 2: Corrigido box-box → box-sizing */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body, html {
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            transition: background-color 0.4s, color 0.4s;
+            overflow: hidden;
+        }
+
+        #editor-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: scroll;
+            scrollbar-width: none;
+            /* Espaço para o menu fixo no topo */
+            padding-top: 48px;
+        }
+
+        #editor-container::-webkit-scrollbar { display: none; }
+
+        /* Simula a lauda A4 */
+        #page {
+            width: 21cm;
+            max-width: 95vw;
+            min-height: 29.7cm;
+            background-color: var(--page-color);
+            box-shadow: var(--page-shadow);
+            margin: 24px 0 60px 0;
+            transition: background-color 0.4s, box-shadow 0.4s;
+        }
+
+        #editor {
+            /* Margens: superior 2,5 cm | direita 2,5 cm | inferior 2,5 cm | esquerda 2,0 cm */
+            padding: 2.5cm 2.5cm 2.5cm 2.0cm;
+            min-height: 29.7cm;
+            outline: none;
+            font-size: 1.15rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            caret-color: var(--cursor-color);
+        }
+
+        #editor[contenteditable] {
+            outline: none;
+        }
+
+        #stats {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        #stats-trigger:hover #stats { opacity: 0.5; }
+        #stats-trigger {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 150px;
+            height: 80px;
+            z-index: 10;
+        }
+
+        /* Menu */
+        #menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            gap: 4px;
+            padding: 10px 20px;
+            opacity: 1;
+            z-index: 100;
+            background: linear-gradient(to bottom, var(--bg-color) 60%, transparent);
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: var(--font-family);
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            cursor: pointer;
+            opacity: 0.75;
+            transition: opacity 0.2s;
+            letter-spacing: 0.05em;
+        }
+
+        .menu-btn:hover {
+            opacity: 1;
+        }
+
+        /* Dropdown Editar */
+        .menu-item {
+            position: relative;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            background-color: var(--bg-color);
+            border: 1px solid currentColor;
+            min-width: 210px;
+            flex-direction: column;
+            z-index: 200;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .dropdown.open {
+            display: flex;
+        }
+
+        .dropdown button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-family: var(--font-family);
+            font-size: 0.82rem;
+            padding: 9px 16px;
+            text-align: left;
+            cursor: pointer;
+            opacity: 0.75;
+            transition: opacity 0.15s, background 0.15s;
+            letter-spacing: 0.04em;
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .dropdown button:hover {
+            opacity: 1;
+            background-color: rgba(128,128,128,0.1);
+        }
+
+        .dropdown .separator {
+            height: 1px;
+            background-color: currentColor;
+            opacity: 0.15;
+            margin: 2px 0;
+        }
+        /* Modal Sobre */
+        #modal-sobre {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+
+        #modal-box {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            padding: 36px 40px;
+            max-width: 380px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        }
+
+        #modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+
+        #modal-version {
+            font-size: 0.78rem;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+
+        .modal-separator {
+            height: 1px;
+            background: currentColor;
+            opacity: 0.15;
+            margin: 16px 0;
+        }
+
+        #modal-body p {
+            font-size: 0.88rem;
+            line-height: 1.8;
+            opacity: 0.85;
+        }
+
+        #modal-body strong {
+            opacity: 0.5;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        #modal-body a {
+            color: var(--text-color);
+            opacity: 0.6;
+            font-size: 0.82rem;
+        }
+
+        #modal-body a:hover { opacity: 1; }
+
+        #modal-close {
+            margin-top: 24px;
+            background: none;
+            border: 1px solid currentColor;
+            color: var(--text-color);
+            font-family: var(--font-family);
+            font-size: 0.82rem;
+            padding: 6px 28px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            letter-spacing: 0.05em;
+        }
+
+        #modal-close:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <nav id="menu">
+        <!-- Arquivo com dropdown -->
+        <div class="menu-item">
+            <button class="menu-btn" id="btn-arquivo">Arquivo</button>
+            <div class="dropdown" id="dropdown-arquivo">
+                <button onmousedown="arquivoCmd(event,'novo')">Novo <small>Ctrl+N</small></button>
+                <button onmousedown="arquivoCmd(event,'abrir')">Abrir… <small>Ctrl+O</small></button>
+                <div class="separator"></div>
+                <button onmousedown="arquivoCmd(event,'salvar')">Salvar <small>Ctrl+S</small></button>
+                <button onmousedown="arquivoCmd(event,'salvaras')">Salvar como… <small>Ctrl+Shift+S</small></button>
+                <div class="separator"></div>
+                <button onmousedown="arquivoCmd(event,'sobre')">Sobre o Scriptum…</button>
+            </div>
+        </div>
+
+        <!-- Editar com dropdown -->
+        <div class="menu-item">
+            <button class="menu-btn" id="btn-editar">Editar</button>
+            <div class="dropdown" id="dropdown-editar">
+                <button onmousedown="dropCmd(event,'desfazer')">Desfazer <small>Ctrl+Z</small></button>
+                <button onmousedown="dropCmd(event,'refazer')">Refazer <small>Ctrl+Y</small></button>
+                <div class="separator"></div>
+                <button onmousedown="dropCmd(event,'copiar')">Copiar <small>Ctrl+C</small></button>
+                <button onmousedown="dropCmd(event,'colar')">Colar <small>Ctrl+V</small></button>
+                <button onmousedown="dropCmd(event,'selecionar')">Selecionar tudo <small>Ctrl+A</small></button>
+                <div class="separator"></div>
+                <button onmousedown="dropCmd(event,'darkmode')">Modo escuro <small>Ctrl+D</small></button>
+                <button onmousedown="dropCmd(event,'fullscreen')">Tela cheia <small>Ctrl+F</small></button>
+            </div>
+        </div>
+
+        <!-- Finalizar -->
+        <button class="menu-btn" onmousedown="(function(e){e.preventDefault();menuExit();})(event)">Finalizar</button>
+    </nav>
+
+    <!-- Input oculto para abrir arquivo (fallback universal) -->
+    <input type="file" id="file-input" accept=".txt,.md" style="display:none">
+
+    <!-- Modal Sobre -->
+    <div id="modal-sobre" style="display:none">
+        <div id="modal-box">
+            <div id="modal-title">Scriptum</div>
+            <div id="modal-version">Editor Minimalista — v1.0</div>
+            <div class="modal-separator"></div>
+            <div id="modal-body">
+                <p><strong>Autor</strong></p>
+                <p>Prof. Adagenor Lobato Ribeiro</p>
+                <p>Universidade Federal do Pará</p>
+                <p>Núcleo de Altos Estudos Amazônicos</p>
+                <p>Faculdade de Computação — ICEN</p>
+                <div class="modal-separator"></div>
+                <p><a href="mailto:adagenor.ribeiro@gmail.com">adagenor.ribeiro@gmail.com</a></p>
+            </div>
+            <button id="modal-close" onmousedown="fecharSobre(event)">Fechar</button>
+        </div>
+    </div>
+
+    <div id="editor-container">
+        <div id="page">
+            <div id="editor" contenteditable="true" spellcheck="false"></div>
+        </div>
+    </div>
+
+    <div id="stats-trigger">
+        <div id="stats"><span id="word-count">0</span> palavras</div>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const wordCountDisplay = document.getElementById('word-count');
+        let autoSaveTimer;
+
+        // 1. Carregar do LocalStorage
+        window.onload = () => {
+            const savedContent = localStorage.getItem('scriptum_data');
+            if (savedContent) {
+                editor.innerText = savedContent;
+                updateStats();
+            }
+            editor.focus();
+            // Posiciona o cursor no início da lauda
+            const range = document.createRange();
+            const sel   = window.getSelection();
+            range.setStart(editor, 0);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        };
+
+        // 2. Autosave (5 segundos de inatividade)
+        editor.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            updateStats();
+            autoSaveTimer = setTimeout(saveToLocal, 5000);
+            scrollCenter();
+        });
+
+        async function saveToLocal() {
+            localStorage.setItem('scriptum_data', editor.innerText);
+            // Se já tem um arquivo vinculado, atualiza ele silenciosamente
+            if (fileHandle) {
+                try {
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(editor.innerText);
+                    await writable.close();
+                } catch(e) {
+                    console.warn('Autosave no arquivo falhou:', e);
+                }
+            }
+        }
+
+        // Mantém o cursor visível ao digitar
+        function scrollCenter() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const rect  = range.getBoundingClientRect();
+                if (rect.bottom > window.innerHeight - 40) {
+                    window.scrollBy({ top: rect.bottom - window.innerHeight + 60, behavior: 'smooth' });
+                }
+            }
+        }
+
+        // 4. Contador de Palavras
+        function updateStats() {
+            const text = editor.innerText.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            wordCountDisplay.innerText = words;
+        }
+
+        // 5. Comandos de Teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                arquivoCmd(e, 'novo');
+            }
+            if (e.ctrlKey && e.key === 'o') {
+                e.preventDefault();
+                arquivoCmd(e, 'abrir');
+            }
+            if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+                e.preventDefault();
+                menuSaveAs();
+            }
+            if (e.ctrlKey && !e.shiftKey && e.key === 's') {
+                e.preventDefault();
+                menuSave();
+            }
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                toggleDark();
+            }
+        });
+
+        // Salva a última seleção antes de perder foco (ex: clicar no menu)
+        let savedRange = null;
+
+        editor.addEventListener('mouseup', saveSelection);
+        editor.addEventListener('keyup',   saveSelection);
+        editor.addEventListener('blur',    saveSelection);
+
+        function saveSelection() {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                savedRange = sel.getRangeAt(0).cloneRange();
+            }
+        }
+
+        function restoreSelection() {
+            editor.focus();
+            if (savedRange) {
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(savedRange);
+            }
+        }
+
+        // ── File System Access API ─────────────────────────────────────
+        let fileHandle = null; // handle do arquivo escolhido pelo usuário
+
+        // Salva no arquivo vinculado; se não houver, abre o seletor de pasta
+        async function menuSave() {
+            saveToLocal(); // sempre mantém backup no localStorage
+
+            try {
+                if (!fileHandle) {
+                    // Primeira vez: pede ao usuário onde e com que nome salvar
+                    fileHandle = await window.showSaveFilePicker({
+                        suggestedName: 'meu-texto.txt',
+                        types: [{
+                            description: 'Arquivo de texto',
+                            accept: { 'text/plain': ['.txt'] }
+                        }]
+                    });
+                }
+
+                // Escreve o conteúdo no arquivo
+                const writable = await fileHandle.createWritable();
+                await writable.write(editor.innerText);
+                await writable.close();
+
+                // Mostra o nome do arquivo no toast
+                showToast(`Salvo: ${fileHandle.name}`);
+
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    // Usuário cancelou o seletor — não é erro
+                    showToast('Salvamento cancelado.');
+                } else if (err.name === 'NotSupportedError' || typeof window.showSaveFilePicker === 'undefined') {
+                    // Browser não suporta a API — faz fallback para download
+                    downloadFallback();
+                } else {
+                    showToast('Erro ao salvar: ' + err.message);
+                }
+            }
+        }
+
+        // Permite trocar o arquivo de destino ("Salvar como")
+        async function menuSaveAs() {
+            // Sugere o nome atual (se já houver arquivo vinculado) ou um padrão
+            const nomeSugerido = fileHandle ? fileHandle.name : 'meu-texto.txt';
+            const nomeDigitado = prompt('Nome do arquivo:', nomeSugerido);
+
+            // Usuário cancelou o prompt
+            if (nomeDigitado === null) return;
+
+            const nomeFormatado = nomeDigitado.trim() || nomeSugerido;
+            // Garante extensão .txt se o usuário não colocar nenhuma
+            const nomeFinal = nomeFormatado.includes('.') ? nomeFormatado : nomeFormatado + '.txt';
+
+            fileHandle = null; // força novo destino
+
+            if (typeof window.showSaveFilePicker === 'function') {
+                try {
+                    fileHandle = await window.showSaveFilePicker({
+                        suggestedName: nomeFinal,
+                        types: [{ description: 'Arquivo de texto', accept: { 'text/plain': ['.txt'] } }]
+                    });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(editor.innerText);
+                    await writable.close();
+                    showToast(`Salvo: ${fileHandle.name}`);
+                } catch (err) {
+                    if (err.name === 'AbortError') showToast('Salvamento cancelado.');
+                    else showToast('Erro ao salvar: ' + err.message);
+                }
+            } else {
+                // Fallback: download com o nome digitado
+                const blob = new Blob([editor.innerText], { type: 'text/plain' });
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href     = url;
+                a.download = nomeFinal;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast(`Baixado: ${nomeFinal}`);
+            }
+        }
+
+        // Fallback: download simples como .txt
+        function downloadFallback() {
+            const blob = new Blob([editor.innerText], { type: 'text/plain' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = 'meu-texto.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Arquivo baixado (browser não suporta salvar em pasta).');
+        }
+
+        function menuExit() {
+            if (confirm('Deseja finalizar? O documento será salvo automaticamente.')) {
+                saveToLocal();
+                window.close();
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:monospace;opacity:0.5;">Sessão encerrada. Pode fechar esta aba.</div>';
+            }
+        }
+
+        function toggleDark() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // ── Dropdown Arquivo ───────────────────────────────────────────
+        const btnArquivo = document.getElementById('btn-arquivo');
+        const ddArquivo  = document.getElementById('dropdown-arquivo');
+
+        btnArquivo.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            ddEditar.classList.remove('open');   // fecha o outro se estiver aberto
+            ddArquivo.classList.toggle('open');
+        });
+
+        document.addEventListener('mousedown', (e) => {
+            if (!btnArquivo.contains(e.target) && !ddArquivo.contains(e.target)) {
+                ddArquivo.classList.remove('open');
+            }
+        });
+
+        async function arquivoCmd(e, cmd) {
+            e.preventDefault();
+            ddArquivo.classList.remove('open');
+
+            switch (cmd) {
+
+                case 'sobre':
+                    document.getElementById('modal-sobre').style.display = 'flex';
+                    break;
+
+                case 'novo':
+                    if (editor.innerText.trim() !== '' &&
+                        !confirm('Deseja criar um novo documento?\nO texto atual será descartado se não estiver salvo.')) {
+                        break;
+                    }
+                    editor.innerText = '';
+                    fileHandle = null;
+                    updateStats();
+                    editor.focus();
+                    showToast('Novo documento.');
+                    break;
+
+                case 'abrir':
+                    // Tenta File System Access API (Chrome/Edge)
+                    if (typeof window.showOpenFilePicker === 'function') {
+                        try {
+                            const [handle] = await window.showOpenFilePicker({
+                                types: [{ description: 'Texto', accept: { 'text/plain': ['.txt', '.md'] } }],
+                                multiple: false
+                            });
+                            const file = await handle.getFile();
+                            editor.innerText = await file.text();
+                            fileHandle = handle;
+                            updateStats();
+                            editor.focus();
+                            showToast(`Aberto: ${handle.name}`);
+                        } catch (err) {
+                            if (err.name !== 'AbortError') showToast('Erro ao abrir: ' + err.message);
+                        }
+                    } else {
+                        // Fallback universal: <input type="file">
+                        document.getElementById('file-input').click();
+                    }
+                    break;
+
+                case 'salvar':
+                    menuSave();
+                    break;
+
+                case 'salvaras':
+                    menuSaveAs();
+                    break;
+            }
+        }
+
+        function fecharSobre(e) {
+            if (e) e.preventDefault();
+            document.getElementById('modal-sobre').style.display = 'none';
+            editor.focus();
+        }
+
+        // Fecha ao clicar fora do box
+        document.getElementById('modal-sobre').addEventListener('mousedown', (e) => {
+            if (e.target.id === 'modal-sobre') fecharSobre(e);
+        });
+        document.getElementById('file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            editor.innerText = await file.text();
+            fileHandle = null; // input file não devolve handle gravável
+            updateStats();
+            editor.focus();
+            showToast(`Aberto: ${file.name} (somente leitura — use Salvar como para gravar)`);
+            e.target.value = ''; // reseta para permitir reabrir o mesmo arquivo
+        });
+
+        // ── Dropdown Editar ────────────────────────────────────────────
+        const btnEditar   = document.getElementById('btn-editar');
+        const ddEditar    = document.getElementById('dropdown-editar');
+
+        btnEditar.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            ddArquivo.classList.remove('open');  // fecha o outro se estiver aberto
+            ddEditar.classList.toggle('open');
+        });
+
+        // Fecha o dropdown ao clicar fora
+        document.addEventListener('mousedown', (e) => {
+            if (!btnEditar.contains(e.target) && !ddEditar.contains(e.target)) {
+                ddEditar.classList.remove('open');
+            }
+        });
+
+        // ── dropCmd: executa e fecha o dropdown ────────────────────────
+        function dropCmd(e, cmd) {
+            e.preventDefault();               // ← chave: impede perda de foco/seleção
+            ddEditar.classList.remove('open');
+
+            switch (cmd) {
+
+                case 'salvar':
+                    menuSave();
+                    break;
+
+                case 'salvaras':
+                    menuSaveAs();
+                    break;
+
+                case 'desfazer':
+                    editor.focus();
+                    document.execCommand('undo');
+                    updateStats();
+                    break;
+
+                case 'refazer':
+                    editor.focus();
+                    document.execCommand('redo');
+                    updateStats();
+                    break;
+
+                case 'copiar': {
+                    // A seleção ainda está intacta porque preventDefault() impediu o blur
+                    const sel = window.getSelection();
+                    const texto = sel ? sel.toString() : '';
+                    if (texto) {
+                        navigator.clipboard.writeText(texto)
+                            .then(() => showToast('Texto copiado.'))
+                            .catch(() => {
+                                // Fallback: foca e usa o comando nativo
+                                editor.focus();
+                                document.execCommand('copy');
+                                showToast('Texto copiado.');
+                            });
+                    } else {
+                        showToast('Selecione um trecho primeiro.');
+                    }
+                    break;
+                }
+
+                case 'colar':
+                    // Precisa de permissão do browser para ler o clipboard
+                    navigator.clipboard.readText()
+                        .then(texto => {
+                            restoreSelection();
+                            const sel = window.getSelection();
+                            if (!sel || !sel.rangeCount) return;
+                            const range = sel.getRangeAt(0);
+                            range.deleteContents();
+                            const node = document.createTextNode(texto);
+                            range.insertNode(node);
+                            range.setStartAfter(node);
+                            range.setEndAfter(node);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                            savedRange = range.cloneRange();
+                            updateStats();
+                            showToast('Texto colado.');
+                        })
+                        .catch(() => showToast('Permissão de clipboard negada.\nUse Ctrl+V.'));
+                    break;
+
+                case 'selecionar': {
+                    editor.focus();
+                    const r = document.createRange();
+                    r.selectNodeContents(editor);
+                    const s = window.getSelection();
+                    s.removeAllRanges();
+                    s.addRange(r);
+                    savedRange = r.cloneRange();
+                    showToast('Tudo selecionado.');
+                    break;
+                }
+
+                case 'darkmode':
+                    toggleDark();
+                    break;
+
+                case 'fullscreen':
+                    toggleFullscreen();
+                    break;
+            }
+        }
+
+        // Toast discreto (substitui alert)
+        function showToast(msg) {
+            let toast = document.getElementById('toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast';
+                toast.style.cssText = [
+                    'position:fixed', 'bottom:60px', 'left:50%',
+                    'transform:translateX(-50%)',
+                    'background:var(--text-color)', 'color:var(--bg-color)',
+                    'font-family:var(--font-family)', 'font-size:0.8rem',
+                    'padding:6px 18px', 'opacity:0',
+                    'transition:opacity 0.3s', 'pointer-events:none', 'z-index:999'
+                ].join(';');
+                document.body.appendChild(toast);
+            }
+            toast.innerText = msg;
+            toast.style.opacity = '0.85';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+        }
+
+        // FIX 3: Substituído document.execCommand (depreciado) pela API moderna
+        editor.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = e.clipboardData.getData('text/plain');
+
+            // Usa a API moderna de seleção para inserir texto puro
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+
+            const textNode = document.createTextNode(text);
+            range.insertNode(textNode);
+
+            // Move o cursor para depois do texto inserido
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            updateStats();
+        });
+    </script>
+</body>
+</html>
