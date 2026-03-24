@@ -126,6 +126,94 @@ body, html {
 #tb-size { font-family:inherit; font-size:11px; border:1px solid #ccc; background:#fff; padding:1px 3px; cursor:default; height:18px; width:44px; }
 
 /* Estilos de impressão PDF */
+/* Cabeçalho e Rodapé das páginas */
+.page-cabecalho, .page-rodape {
+    padding:0 2.5cm 0 2cm;
+    font-family:'Courier Prime','Courier New',monospace;
+    font-size:11px; color:#666;
+    line-height:1.4;
+    min-height:0.6cm;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+}
+.page-cabecalho { padding-top:0.2cm; border-bottom:1px solid #ddd; margin-bottom:0.2cm; }
+.page-rodape    { padding-bottom:0.2cm; border-top:1px solid #ddd; margin-top:0.2cm; }
+.page-cabecalho.vazio, .page-rodape.vazio { display:none; }
+
+/* Modal de Inserir */
+#modal-ins {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.3);
+    align-items:center; justify-content:center; z-index:500;
+}
+#mins-box {
+    background:#fff; border:2px solid #000;
+    box-shadow:4px 4px 0 #000; width:340px; font-family:inherit;
+}
+#mins-title {
+    height:22px; border-bottom:1px solid #000;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:bold; font-size:12px; position:relative;
+}
+#mins-title::before, #mins-title::after {
+    content:''; position:absolute; top:3px; bottom:3px;
+    width:calc(50% - 55px);
+    background:repeating-linear-gradient(180deg,#000 0px,#000 1px,#fff 1px,#fff 2px);
+}
+#mins-title::before{left:8px;} #mins-title::after{right:8px;}
+#mins-title span{background:#fff;padding:0 8px;z-index:1;}
+#mins-body { padding:16px 20px; }
+#mins-body label { font-size:11px; opacity:.6; display:block; margin-bottom:2px; }
+#mins-body input[type=text] {
+    width:100%; border:1px solid #999; padding:4px 6px;
+    font-family:inherit; font-size:12px; margin-bottom:12px;
+}
+#mins-body input[type=text]:focus { outline:none; border-color:#000; }
+#mins-footer { padding:8px 16px 14px; display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #ddd; }
+.mins-btn {
+    background:#fff; border:2px solid #000; font-family:inherit;
+    font-size:12px; padding:3px 20px; cursor:default;
+    box-shadow:2px 2px 0 #000;
+}
+.mins-btn:active { background:#000; color:#fff; }
+
+/* Barra de busca */
+#busca-bar {
+    display:none;
+    height:26px; background:#f0f0f0;
+    border-bottom:1px solid #999;
+    align-items:center; gap:6px;
+    padding:0 10px; flex-shrink:0;
+}
+#busca-bar.open { display:flex; }
+#busca-input {
+    font-family:inherit; font-size:12px;
+    border:1px solid #999; padding:2px 6px;
+    height:18px; width:180px; background:#fff;
+}
+#busca-input:focus { outline:none; border-color:#000; }
+#busca-info { font-size:11px; opacity:.6; min-width:70px; }
+.busca-btn {
+    background:#fff; border:1px solid #999;
+    font-family:inherit; font-size:11px;
+    padding:1px 8px; height:18px; cursor:default;
+    display:flex; align-items:center;
+}
+.busca-btn:hover { border-color:#000; background:#e8e8e8; }
+.busca-btn:active { background:#000; color:#fff; }
+#busca-close {
+    margin-left:auto; background:none; border:none;
+    font-size:14px; cursor:default; opacity:.5; padding:0 4px;
+}
+#busca-close:hover { opacity:1; }
+mark.destaque {
+    background:#ffe066; color:#000;
+    border-radius:1px; padding:0;
+}
+mark.destaque.atual {
+    background:#ff9900; color:#fff;
+}
+
 @media print {
     body { background:white !important; }
     #window { position:static !important; transform:none !important;
@@ -225,6 +313,17 @@ body, html {
                 <button onmousedown="arq(event,'pdf')">Salvar como PDF... <small>&#8984;P</small></button>
                 <div class="sep"></div>
                 <button onmousedown="arq(event,'sobre')">Sobre o Scriptum...</button>
+                <div class="sep"></div>
+                <button onmousedown="arq(event,'encerrar')">Encerrar o Scriptum</button>
+            </div>
+        </div>
+        <div class="mitem">
+            <button class="mbtn" id="bIns">Inserir</button>
+            <div class="drop" id="dIns">
+                <button onmousedown="ins(event,'cabecalho')">Cabe&ccedil;alho...</button>
+                <button onmousedown="ins(event,'rodape')">Rodap&eacute;...</button>
+                <div class="sep"></div>
+                <button onmousedown="ins(event,'laudas')">&#10003; Contador de laudas</button>
             </div>
         </div>
         <div class="mitem">
@@ -247,7 +346,10 @@ body, html {
                 <button onmousedown="edt(event,'numerar')" id="btn-numerar">&#10003; Numerar p&aacute;ginas</button>
             </div>
         </div>
-        <button class="mbtn" onmousedown="cmdFechar(event)">Fechar</button>
+        <button class="mbtn" onmousedown="abreBusca(event)" title="Buscar (Cmd+F)" id="btn-lupa">
+            <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="5.5" cy="5.5" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="9" y1="9" x2="12" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button class="mbtn" onmousedown="cmdFechar(event)">Encerrar</button>
     </div>
 
 
@@ -276,6 +378,15 @@ body, html {
         <button class="tbtn" id="tb-right" onmousedown="fmt(event,'justifyRight')" title="Alinhar à direita"><svg width="14" height="12" viewBox="0 0 14 12"><rect x="0" y="0" width="14" height="2" rx="1"/><rect x="4" y="5" width="10" height="2" rx="1"/><rect x="0" y="10" width="14" height="2" rx="1"/></svg></button>
         <button class="tbtn" id="tb-justify" onmousedown="fmt(event,'justifyFull')" title="Justificar"><svg width="14" height="12" viewBox="0 0 14 12"><rect x="0" y="0" width="14" height="2" rx="1"/><rect x="0" y="5" width="14" height="2" rx="1"/><rect x="0" y="10" width="14" height="2" rx="1"/></svg></button>
     </div>
+
+    <div id="busca-bar">
+        <svg width="12" height="12" viewBox="0 0 12 12" style="opacity:.5;flex-shrink:0"><circle cx="5" cy="5" r="4" fill="none" stroke="#000" stroke-width="1.5"/><line x1="8.5" y1="8.5" x2="11" y2="11" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="text" id="busca-input" placeholder="Buscar...">
+        <span id="busca-info"></span>
+        <button class="busca-btn" onmousedown="buscaNav(event,-1)">&#9650;</button>
+        <button class="busca-btn" onmousedown="buscaNav(event,1)">&#9660;</button>
+        <button id="busca-close" onmousedown="fechaBusca(event)">&#10005;</button>
+    </div>
     <div id="scroll-area"></div>
 
     <div id="statusbar">
@@ -284,11 +395,33 @@ body, html {
         <span id="chars">0 caracteres</span>
         <div class="sdiv"></div>
         <span id="saved">&#10003; salvo</span>
+        <div class="sdiv" id="sdiv-laudas" style="display:none"></div>
+        <span id="laudas" style="display:none"></span>
     </div>
 </div>
 
 <input type="file" id="finput" accept=".txt,.md" style="display:none">
 <div id="_toast"></div>
+
+<div id="modal-ins">
+    <div id="mins-box">
+        <div id="mins-title"><span id="mins-title-txt">Cabe&ccedil;alho</span></div>
+        <div id="mins-body">
+            <label id="mins-label">Texto do cabe&ccedil;alho (aparece em todas as p&aacute;ginas):</label>
+            <input type="text" id="mins-input" placeholder="Ex: Universidade Federal do Par&aacute;">
+            <label>Alinhamento:</label>
+            <select id="mins-align" style="font-family:inherit;font-size:12px;border:1px solid #999;padding:2px 4px;width:100%;margin-bottom:0;">
+                <option value="left">Esquerda</option>
+                <option value="center">Centro</option>
+                <option value="right">Direita</option>
+            </select>
+        </div>
+        <div id="mins-footer">
+            <button class="mins-btn" onmousedown="fechaIns(event)">Cancelar</button>
+            <button class="mins-btn" onmousedown="aplicaIns(event)">OK</button>
+        </div>
+    </div>
+</div>
 
 <div id="modal">
     <div id="mbox">
@@ -297,9 +430,9 @@ body, html {
             <p class="app-name">Scriptum</p>
             <p class="version">Editor Minimalista &mdash; v1.0</p>
             <div class="sep"></div>
-            <p><b>Prof. Adagenor Lobato Ribeiro</b></p>
+            <p><b>Prof. Dr. Adagenor Lobato Ribeiro</b></p>
             <p>Universidade Federal do Par&aacute;</p>
-            <p>N&uacute;cleo de Altos Estudos Amaz&ocirc;nicos</p>
+            <p>N&uacute;cleo de Altos Estudos Amaz&ocirc;nicos &mdash; NAEA</p>
             <p>Faculdade de Computa&ccedil;&atilde;o &mdash; ICEN</p>
         </div>
         <div id="mbox-footer">
@@ -349,6 +482,9 @@ function novaPagina(texto) {
     if (btnN2 && btnN2.innerHTML.indexOf('✓') === -1) numDiv.classList.add('hidden');
     scrollArea.appendChild(pageDiv);
     pageList.push(edDiv);
+
+    // Aplica cabeçalho e rodapé se existirem
+    setTimeout(atualizaCabecalhoRodape, 0);
 
     edDiv.addEventListener('input', onInput);
     edDiv.addEventListener('keydown', onKeyDown);
@@ -506,9 +642,13 @@ function restoreSelection() {
 function stats() {
     var full = pageList.map(function(p) { return p.innerText; }).join(' ').trim();
     var w = full ? full.split(/\s+/).length : 0;
-    var c = full.replace(/\s/g, '').length;
+    var ch = full.replace(/\s/g, '').length;
     wcEl.innerText  = w + (w === 1 ? ' palavra' : ' palavras');
-    chEl.innerText  = c + ' caracteres';
+    chEl.innerText  = ch + ' caracteres';
+    if (mostrarLaudas) {
+        var laudas = ch / 2100;
+        document.getElementById('laudas').innerText = laudas.toFixed(1) + ' laudas';
+    }
 }
 
 // ── Salvar / Carregar ──────────────────────────────────────────────────
@@ -603,6 +743,9 @@ function arq(e, cmd) {
         nome = n; fnEl.innerText = n;
         salvaLocal(); dl(nome);
 
+    } else if (cmd === 'encerrar') {
+        cmdFechar();
+
     } else if (cmd === 'pdf') {
         toast('Abrindo diálogo de impressão...');
         setTimeout(function() { window.print(); }, 300);
@@ -673,6 +816,7 @@ function edt(e, cmd) {
     } else if (cmd === 'full') {
         if (!document.fullscreenElement) document.documentElement.requestFullscreen();
         else document.exitFullscreen();
+
     }
 }
 
@@ -754,6 +898,243 @@ document.addEventListener('selectionchange', function() {
     atualizaToolbar();
 });
 
+// ── Busca ─────────────────────────────────────────────────────────────
+var buscaAtual  = 0;
+var buscaTotal  = 0;
+var buscaMarks  = [];
+
+function abreBusca(e) {
+    if (e) e.preventDefault();
+    var bar = document.getElementById('busca-bar');
+    bar.classList.add('open');
+    var inp = document.getElementById('busca-input');
+    inp.focus();
+    inp.select();
+}
+
+function fechaBusca(e) {
+    if (e) e.preventDefault();
+    document.getElementById('busca-bar').classList.remove('open');
+    limpaMarks();
+    document.getElementById('busca-input').value = '';
+    document.getElementById('busca-info').innerText = '';
+    if (lastFocus) lastFocus.focus();
+}
+
+function limpaMarks() {
+    buscaMarks.forEach(function(m) {
+        var parent = m.parentNode;
+        if (parent) {
+            parent.replaceChild(document.createTextNode(m.innerText), m);
+            parent.normalize();
+        }
+    });
+    buscaMarks = [];
+    buscaAtual = 0; buscaTotal = 0;
+}
+
+function executaBusca() {
+    limpaMarks();
+    var termo = document.getElementById('busca-input').value;
+    if (!termo) { document.getElementById('busca-info').innerText = ''; return; }
+
+    var termoLower = termo.toLowerCase();
+    var encontrados = [];
+
+    pageList.forEach(function(ed) {
+        buscaNoNode(ed, termoLower, encontrados);
+    });
+
+    buscaTotal  = encontrados.length;
+    buscaMarks  = encontrados;
+
+    if (buscaTotal === 0) {
+        document.getElementById('busca-info').innerText = 'Não encontrado';
+        return;
+    }
+
+    buscaAtual = 0;
+    destacaAtual();
+}
+
+function buscaNoNode(node, termo, lista) {
+    if (node.nodeType === 3) {
+        // Nó de texto
+        var txt   = node.nodeValue;
+        var lower = txt.toLowerCase();
+        var idx   = 0;
+        var frag  = document.createDocumentFragment();
+        var achou = false;
+
+        while ((idx = lower.indexOf(termo, idx)) !== -1) {
+            if (idx > 0) frag.appendChild(document.createTextNode(txt.slice(0, idx)));
+            var mark = document.createElement('mark');
+            mark.className = 'destaque';
+            mark.innerText = txt.slice(idx, idx + termo.length);
+            frag.appendChild(mark);
+            lista.push(mark);
+            txt   = txt.slice(idx + termo.length);
+            lower = lower.slice(idx + termo.length);
+            idx   = 0;
+            achou = true;
+        }
+
+        if (achou) {
+            if (txt) frag.appendChild(document.createTextNode(txt));
+            node.parentNode.replaceChild(frag, node);
+        }
+    } else if (node.nodeType === 1 && node.tagName !== 'MARK') {
+        // Elemento — percorre filhos (cópia pois replaceChild muda a lista)
+        Array.from(node.childNodes).forEach(function(child) {
+            buscaNoNode(child, termo, lista);
+        });
+    }
+}
+
+function destacaAtual() {
+    buscaMarks.forEach(function(m, i) { m.className = 'destaque' + (i === buscaAtual ? ' atual' : ''); });
+    if (buscaMarks[buscaAtual]) {
+        buscaMarks[buscaAtual].scrollIntoView({ behavior:'smooth', block:'center' });
+    }
+    document.getElementById('busca-info').innerText =
+        (buscaTotal > 0) ? (buscaAtual + 1) + ' de ' + buscaTotal : 'Não encontrado';
+}
+
+function buscaNav(e, dir) {
+    e.preventDefault();
+    if (buscaTotal === 0) { executaBusca(); return; }
+    buscaAtual = (buscaAtual + dir + buscaTotal) % buscaTotal;
+    destacaAtual();
+}
+
+// Input na busca
+document.getElementById('busca-input').addEventListener('input', function() {
+    executaBusca();
+});
+document.getElementById('busca-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        buscaNav(e, e.shiftKey ? -1 : 1);
+    }
+    if (e.key === 'Escape') { fechaBusca(e); }
+});
+
+// ── Menu Inserir ─────────────────────────────────────────────────────
+var bIns = document.getElementById('bIns');
+var dIns = document.getElementById('dIns');
+var insMode = '';         // 'cabecalho' ou 'rodape'
+var mostrarLaudas = false;
+var cabecalhoTxt  = '';
+var cabecalhoAlign = 'left';
+var rodapeTxt     = '';
+var rodapeAlign   = 'left';
+
+bIns.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    bIns.classList.toggle('active');
+    dArq.classList.remove('open'); bArq.classList.remove('active');
+    dEdt.classList.remove('open'); bEdt.classList.remove('active');
+    dIns.classList.toggle('open');
+});
+document.addEventListener('mousedown', function(e) {
+    if (!bIns.contains(e.target) && !dIns.contains(e.target)) {
+        dIns.classList.remove('open'); bIns.classList.remove('active');
+    }
+});
+
+function ins(e, cmd) {
+    e.preventDefault();
+    dIns.classList.remove('open'); bIns.classList.remove('active');
+
+    if (cmd === 'cabecalho') {
+        insMode = 'cabecalho';
+        document.getElementById('mins-title-txt').innerText = 'Cabeçalho';
+        document.getElementById('mins-label').innerText = 'Texto do cabeçalho (aparece em todas as páginas):';
+        document.getElementById('mins-input').value = cabecalhoTxt;
+        document.getElementById('mins-align').value = cabecalhoAlign;
+        document.getElementById('modal-ins').style.display = 'flex';
+        setTimeout(function(){ document.getElementById('mins-input').focus(); }, 100);
+
+    } else if (cmd === 'rodape') {
+        insMode = 'rodape';
+        document.getElementById('mins-title-txt').innerText = 'Rodapé';
+        document.getElementById('mins-label').innerText = 'Texto do rodapé (aparece em todas as páginas):';
+        document.getElementById('mins-input').value = rodapeTxt;
+        document.getElementById('mins-align').value = rodapeAlign;
+        document.getElementById('modal-ins').style.display = 'flex';
+        setTimeout(function(){ document.getElementById('mins-input').focus(); }, 100);
+
+    } else if (cmd === 'laudas') {
+        mostrarLaudas = !mostrarLaudas;
+        var btn = dIns.querySelector('button:last-child');
+        btn.innerHTML = (mostrarLaudas ? '&#10003; ' : '&nbsp;&nbsp;&nbsp; ') + 'Contador de laudas';
+        document.getElementById('laudas').style.display     = mostrarLaudas ? '' : 'none';
+        document.getElementById('sdiv-laudas').style.display = mostrarLaudas ? '' : 'none';
+        stats();
+        toast(mostrarLaudas ? 'Contador de laudas ativado.' : 'Contador de laudas desativado.');
+    }
+}
+
+function aplicaIns(e) {
+    e.preventDefault();
+    var txt   = document.getElementById('mins-input').value.trim();
+    var align = document.getElementById('mins-align').value;
+
+    if (insMode === 'cabecalho') {
+        cabecalhoTxt   = txt;
+        cabecalhoAlign = align;
+        atualizaCabecalhoRodape();
+        toast(txt ? 'Cabeçalho aplicado.' : 'Cabeçalho removido.');
+    } else {
+        rodapeTxt   = txt;
+        rodapeAlign = align;
+        atualizaCabecalhoRodape();
+        toast(txt ? 'Rodapé aplicado.' : 'Rodapé removido.');
+    }
+    document.getElementById('modal-ins').style.display = 'none';
+    if (lastFocus) lastFocus.focus();
+}
+
+function fechaIns(e) {
+    if (e) e.preventDefault();
+    document.getElementById('modal-ins').style.display = 'none';
+    if (lastFocus) lastFocus.focus();
+}
+
+document.getElementById('modal-ins').addEventListener('mousedown', function(e) {
+    if (e.target.id === 'modal-ins') fechaIns(e);
+});
+
+function atualizaCabecalhoRodape() {
+    pageList.forEach(function(ed) {
+        var page = ed.parentNode;
+
+        // Cabeçalho
+        var cab = page.querySelector('.page-cabecalho');
+        if (!cab) {
+            cab = document.createElement('div');
+            cab.className = 'page-cabecalho';
+            // Insere após o page-header (número)
+            var header = page.querySelector('.page-header');
+            header.parentNode.insertBefore(cab, header.nextSibling);
+        }
+        cab.innerText  = cabecalhoTxt;
+        cab.style.textAlign = cabecalhoAlign;
+        cab.classList.toggle('vazio', !cabecalhoTxt);
+
+        // Rodapé
+        var rod = page.querySelector('.page-rodape');
+        if (!rod) {
+            rod = document.createElement('div');
+            rod.className = 'page-rodape';
+            page.appendChild(rod);
+        }
+        rod.innerText  = rodapeTxt;
+        rod.style.textAlign = rodapeAlign;
+        rod.classList.toggle('vazio', !rodapeTxt);
+    });
+}
+
 // ── Fonte e tamanho ──────────────────────────────────────────────────
 function mudaFonte(sel) {
     var fonte = sel.value;
@@ -780,7 +1161,7 @@ document.addEventListener('keydown', function(e) {
     if (mod && e.key === 'n') { e.preventDefault(); arq(e, 'novo'); }
     if (mod && e.key === 'o') { e.preventDefault(); arq(e, 'abrir'); }
     if (mod && e.key === 's') { e.preventDefault(); arq(e, 'salvar'); }
-    if (mod && e.key === 'f') { e.preventDefault(); edt(e, 'full'); }
+    if (mod && e.key === 'f') { e.preventDefault(); abreBusca(e); }
     if (mod && e.key === 'b') { e.preventDefault(); restoreSelection(); document.execCommand('bold',false,null); atualizaToolbar(); }
     if (mod && e.key === 'i') { e.preventDefault(); restoreSelection(); document.execCommand('italic',false,null); atualizaToolbar(); }
     if (mod && e.key === 'p') { e.preventDefault(); toast('Abrindo diálogo de impressão...'); setTimeout(function(){window.print();},300); }
