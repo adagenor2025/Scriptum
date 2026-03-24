@@ -144,6 +144,48 @@ body, html {
 .page-rodape    { padding-bottom:0.2cm; border-top:1px solid #ddd; margin-top:0.2cm; }
 .page-cabecalho.vazio, .page-rodape.vazio { display:none; }
 
+/* Modais IA */
+#modal-iakey, #modal-iares {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.3);
+    align-items:center; justify-content:center; z-index:600;
+}
+#miakey-box, #miares-box {
+    background:#fff; border:2px solid #000;
+    box-shadow:4px 4px 0 #000; width:360px; font-family:inherit;
+}
+#miakey-title, #miares-title {
+    height:22px; border-bottom:1px solid #000;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:bold; font-size:12px; position:relative;
+}
+#miakey-title::before, #miakey-title::after,
+#miares-title::before, #miares-title::after {
+    content:''; position:absolute; top:3px; bottom:3px;
+    width:calc(50% - 70px);
+    background:repeating-linear-gradient(180deg,#000 0px,#000 1px,#fff 1px,#fff 2px);
+}
+#miakey-title::before,#miares-title::before{left:8px;}
+#miakey-title::after,#miares-title::after{right:8px;}
+#miakey-title span,#miares-title span{background:#fff;padding:0 8px;z-index:1;}
+#miakey-body, #miares-body { padding:14px 20px 10px; }
+#miakey-footer, #miares-footer {
+    padding:8px 16px 14px; display:flex;
+    justify-content:flex-end; gap:8px; border-top:1px solid #ddd;
+}
+
+/* Rótulo do resumo */
+.rotulo-resumo {
+    display: inline-block;
+    border: 1.5px solid #000;
+    padding: 2px 8px;
+    font-family: 'Geneva', Arial, sans-serif;
+    font-size: 11px;
+    margin-bottom: 6px;
+    margin-top: 16px;
+    letter-spacing: 0.5px;
+}
+
 /* Modal Email */
 #modal-email {
     display:none; position:fixed; inset:0;
@@ -384,6 +426,17 @@ mark.destaque.atual {
                 <button onmousedown="edt(event,'numerar')" id="btn-numerar">&#10003; Numerar p&aacute;ginas</button>
             </div>
         </div>
+        <div class="mitem">
+            <button class="mbtn" id="bIA">IA</button>
+            <div class="drop" id="dIA">
+                <button onmousedown="ia(event,'corrigir')">Corrigir gram&aacute;tica</button>
+                <button onmousedown="ia(event,'resumir')">Resumir documento</button>
+                <button onmousedown="ia(event,'reescrever')">Reescrever trecho</button>
+                <button onmousedown="ia(event,'traduzir')">Traduzir para ingl&ecirc;s</button>
+                <div class="sep"></div>
+                <button onmousedown="ia(event,'config')">&#9881; Configurar chave API...</button>
+            </div>
+        </div>
         <button class="mbtn" onmousedown="abreEmail(event)" title="Enviar por e-mail" id="btn-email">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="11" height="8" rx="1"/><polyline points="1,3 6.5,8 12,3"/></svg>
         </button>
@@ -478,6 +531,44 @@ mark.destaque.atual {
         <div id="memail-footer">
             <button class="mins-btn" onmousedown="fechaEmail(event)">Cancelar</button>
             <button class="mins-btn" onmousedown="enviaEmail(event)">&#9993; Enviar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Configurar API Key -->
+<div id="modal-iakey">
+    <div id="miakey-box">
+        <div id="miakey-title"><span>Configurar IA (Groq)</span></div>
+        <div id="miakey-body">
+            <p style="font-size:11px;line-height:1.6;margin-bottom:10px;">
+                Obtenha sua chave <b>gratuita</b> em:<br>
+                <b>console.groq.com</b> &rarr; API Keys &rarr; Create API Key
+            </p>
+            <label style="font-size:11px;opacity:.6;display:block;margin-bottom:2px;">Chave API (API Key):</label>
+            <input type="password" id="ia-apikey" placeholder="gsk_..." style="width:100%;border:1px solid #999;padding:4px 6px;font-family:inherit;font-size:12px;">
+            <p style="font-size:10px;color:#888;margin-top:6px;">A chave fica salva apenas neste navegador.</p>
+        </div>
+        <div id="miakey-footer">
+            <button class="mins-btn" onmousedown="fechaIAKey(event)">Cancelar</button>
+            <button class="mins-btn" onmousedown="testaIAKey(event)">Testar</button>
+            <button class="mins-btn" onmousedown="salvaIAKey(event)">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Resultado da IA -->
+<div id="modal-iares">
+    <div id="miares-box">
+        <div id="miares-title"><span id="miares-titulo">IA</span></div>
+        <div id="miares-body">
+            <div id="miares-loading" style="text-align:center;padding:20px 0;display:none;">
+                <p style="font-size:12px;opacity:.6;">Consultando Groq / Llama 3...</p>
+            </div>
+            <div id="miares-texto" style="font-size:12px;line-height:1.7;max-height:300px;overflow-y:auto;white-space:pre-wrap;"></div>
+        </div>
+        <div id="miares-footer">
+            <button class="mins-btn" onmousedown="fechaIARes(event)">Fechar</button>
+            <button class="mins-btn" id="miares-btn-aplicar" onmousedown="aplicaIA(event)">Aplicar no texto</button>
         </div>
     </div>
 </div>
@@ -960,6 +1051,262 @@ document.addEventListener('selectionchange', function() {
     atualizaToolbar();
 });
 
+// ── Inteligência Artificial (Gemini) ─────────────────────────────────
+var CHAVE_PADRAO = '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'; // chave do professor — usada quando o aluno não tem a sua
+var iaKey        = localStorage.getItem('scriptum_groqkey') || CHAVE_PADRAO;
+var iaResultado = '';
+var iaModo      = '';
+
+var bIA = document.getElementById('bIA');
+var dIA = document.getElementById('dIA');
+
+bIA.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    bIA.classList.toggle('active');
+    dArq.classList.remove('open'); bArq.classList.remove('active');
+    dEdt.classList.remove('open'); bEdt.classList.remove('active');
+    bIns.classList.remove('active'); dIns.classList.remove('open');
+    dIA.classList.toggle('open');
+});
+
+function ia(e, cmd) {
+    e.preventDefault();
+    dIA.classList.remove('open'); bIA.classList.remove('active');
+
+    if (cmd === 'config') {
+        document.getElementById('ia-apikey').value = iaKey;
+        document.getElementById('modal-iakey').style.display = 'flex';
+        setTimeout(function(){ document.getElementById('ia-apikey').focus(); }, 100);
+        return;
+    }
+
+    if (!iaKey) {
+        if (confirm('Chave API do Gemini não configurada.\nDeseja configurar agora?')) {
+            document.getElementById('modal-iakey').style.display = 'flex';
+            setTimeout(function(){ document.getElementById('ia-apikey').focus(); }, 100);
+        }
+        return;
+    }
+
+    iaModo = cmd;
+    var sel = window.getSelection().toString().trim();
+    var textoCompleto = pageList.map(function(p){ return p.innerText; }).join('\n').trim();
+    var prompt = '';
+    var titulo = '';
+    var mostraAplicar = false;
+
+    if (cmd === 'corrigir') {
+        titulo = 'Corrigir gramática';
+        var base = sel || textoCompleto;
+        if (!base) { toast('Selecione um trecho ou escreva algo primeiro.'); return; }
+        prompt = 'Corrija a gramática, ortografia e pontuação do texto abaixo, mantendo o estilo e o conteúdo original. Retorne apenas o texto corrigido, sem explicações:\n\n' + base;
+        mostraAplicar = true;
+    } else if (cmd === 'resumir') {
+        if (!textoCompleto) { toast('Escreva algo para resumir.'); return; }
+        titulo = 'Resumir documento';
+        prompt = 'Faça um resumo conciso e objetivo do texto abaixo em português:\n\n' + textoCompleto;
+        mostraAplicar = true;
+    } else if (cmd === 'reescrever') {
+        titulo = 'Reescrever trecho';
+        if (!sel) { toast('Selecione o trecho que deseja reescrever.'); return; }
+        prompt = 'Reescreva o trecho abaixo com outras palavras, mantendo o mesmo sentido e em português. Retorne apenas o trecho reescrito:\n\n' + sel;
+        mostraAplicar = true;
+    } else if (cmd === 'traduzir') {
+        titulo = 'Traduzir para inglês';
+        var base = sel || textoCompleto;
+        if (!base) { toast('Selecione um trecho ou escreva algo primeiro.'); return; }
+        prompt = 'Traduza o texto abaixo do português para o inglês. Retorne apenas o texto traduzido, sem explicações:\n\n' + base;
+        mostraAplicar = true;
+    }
+
+    document.getElementById('miares-titulo').innerText = titulo;
+    document.getElementById('miares-texto').innerText  = '';
+    document.getElementById('miares-loading').style.display = 'block';
+    document.getElementById('miares-btn-aplicar').style.display = mostraAplicar ? '' : 'none';
+    document.getElementById('modal-iares').style.display = 'flex';
+
+    var reqBody = JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+            { role: 'system', content: 'Você é um assistente de escrita em português brasileiro. Responda sempre em português.' },
+            { role: 'user',   content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2048
+    });
+
+    fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + iaKey
+        },
+        body: reqBody
+    })
+    .then(function(r) {
+        if (!r.ok) {
+            return r.json().then(function(e) {
+                throw new Error(e.error ? e.error.message : 'HTTP ' + r.status);
+            });
+        }
+        return r.json();
+    })
+    .then(function(data) {
+        document.getElementById('miares-loading').style.display = 'none';
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            iaResultado = data.choices[0].message.content;
+            document.getElementById('miares-texto').innerText = iaResultado;
+        } else {
+            document.getElementById('miares-texto').innerText = 'Resposta vazia da API. Tente novamente.';
+        }
+    })
+    .catch(function(err) {
+        document.getElementById('miares-loading').style.display = 'none';
+        var msg = err.message || 'Erro desconhecido';
+        if (msg.indexOf('Failed to fetch') !== -1 || msg.indexOf('NetworkError') !== -1) {
+            document.getElementById('miares-texto').innerText =
+                'Erro de conexão com a API Groq.\n\n' +
+                'Possíveis causas:\n' +
+                '• Chave API inválida ou expirada\n' +
+                '• Sem conexão com a internet\n\n' +
+                'Verifique em: console.groq.com';
+        } else {
+            document.getElementById('miares-texto').innerText = 'Erro: ' + msg;
+        }
+    });
+}
+
+function aplicaIA(e) {
+    e.preventDefault();
+    if (!iaResultado) return;
+    fechaIARes(null);
+
+    var ultimaEd = pageList[pageList.length - 1];
+
+    if (iaModo === 'resumir') {
+        // Insere rótulo + resumo no final do documento
+        ultimaEd.focus();
+
+        // Adiciona quebra de linha
+        var br1 = document.createElement('br');
+        var br2 = document.createElement('br');
+        ultimaEd.appendChild(br1);
+        ultimaEd.appendChild(br2);
+
+        // Cria o rótulo
+        var rotulo = document.createElement('span');
+        rotulo.className = 'rotulo-resumo';
+        rotulo.contentEditable = 'false';
+        rotulo.innerText = 'Texto resumido';
+        ultimaEd.appendChild(rotulo);
+
+        // Quebra após o rótulo
+        var br3 = document.createElement('br');
+        ultimaEd.appendChild(br3);
+
+        // Texto do resumo
+        var textoNode = document.createTextNode(iaResultado);
+        ultimaEd.appendChild(textoNode);
+
+        // Move cursor para o final
+        var range = document.createRange();
+        range.setStartAfter(textoNode);
+        range.collapse(true);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+    } else {
+        // Corrigir / Reescrever — insere com rótulo
+        var rotuloTxt = iaModo === 'corrigir' ? 'Texto com correção gramatical' :
+                         iaModo === 'traduzir'  ? 'Texto traduzido para inglês'    : 'Reescrita do trecho';
+
+        ultimaEd.focus();
+
+        var br1 = document.createElement('br');
+        var br2 = document.createElement('br');
+        ultimaEd.appendChild(br1);
+        ultimaEd.appendChild(br2);
+
+        var rotulo = document.createElement('span');
+        rotulo.className = 'rotulo-resumo';
+        rotulo.contentEditable = 'false';
+        rotulo.innerText = rotuloTxt;
+        ultimaEd.appendChild(rotulo);
+
+        var br3 = document.createElement('br');
+        ultimaEd.appendChild(br3);
+
+        var textoNode = document.createTextNode(iaResultado);
+        ultimaEd.appendChild(textoNode);
+
+        var range = document.createRange();
+        range.setStartAfter(textoNode);
+        range.collapse(true);
+        var sel2 = window.getSelection();
+        sel2.removeAllRanges();
+        sel2.addRange(range);
+    }
+
+    if (lastFocus) checaOverflow(lastFocus);
+    stats();
+    toast('Texto aplicado.');
+}
+
+function fechaIARes(e) {
+    if (e) e.preventDefault();
+    document.getElementById('modal-iares').style.display = 'none';
+    if (lastFocus) lastFocus.focus();
+}
+document.getElementById('modal-iares').addEventListener('mousedown', function(e) {
+    if (e.target.id === 'modal-iares') fechaIARes(e);
+});
+
+function salvaIAKey(e) {
+    e.preventDefault();
+    iaKey = document.getElementById('ia-apikey').value.trim();
+    localStorage.setItem('scriptum_groqkey', iaKey);
+    fechaIAKey(null);
+    toast('Chave API salva.');
+}
+function testaIAKey(e) {
+    e.preventDefault();
+    var key = document.getElementById('ia-apikey').value.trim();
+    if (!key) { alert('Cole a chave primeiro.'); return; }
+    document.getElementById('miakey-footer').querySelectorAll('button').forEach(function(b){ b.disabled=true; });
+    fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: 'Responda apenas: OK' }],
+            max_tokens: 5
+        })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        document.getElementById('miakey-footer').querySelectorAll('button').forEach(function(b){ b.disabled=false; });
+        if (data.choices && data.choices[0]) {
+            alert('✓ Chave válida! A IA está funcionando.');
+        } else {
+            alert('Chave inválida: ' + (data.error ? data.error.message : 'erro desconhecido'));
+        }
+    })
+    .catch(function(err){
+        document.getElementById('miakey-footer').querySelectorAll('button').forEach(function(b){ b.disabled=false; });
+        alert('Erro de conexão: ' + err.message);
+    });
+}
+
+function fechaIAKey(e) {
+    if (e) e.preventDefault();
+    document.getElementById('modal-iakey').style.display = 'none';
+    if (lastFocus) lastFocus.focus();
+}
+document.getElementById('modal-iakey').addEventListener('mousedown', function(e) {
+    if (e.target.id === 'modal-iakey') fechaIAKey(e);
+});
+
 // ── Enviar por e-mail ────────────────────────────────────────────────
 function abreEmail(e) {
     if (e) e.preventDefault();
@@ -1000,7 +1347,7 @@ document.getElementById('modal-email').addEventListener('mousedown', function(e)
     if (e.target.id === 'modal-email') fechaEmail(e);
 });
 
-// ── Busca ─// ── Busca ─// ── Busca ─────────────────────────────────────────────────────────────
+// ── Busca ─────────────────────────────────────────────────────────────
 var buscaAtual  = 0;
 var buscaTotal  = 0;
 var buscaMarks  = [];
@@ -1141,6 +1488,9 @@ bIns.addEventListener('mousedown', function(e) {
 document.addEventListener('mousedown', function(e) {
     if (!bIns.contains(e.target) && !dIns.contains(e.target)) {
         dIns.classList.remove('open'); bIns.classList.remove('active');
+    }
+    if (typeof bIA !== 'undefined' && !bIA.contains(e.target) && !dIA.contains(e.target)) {
+        dIA.classList.remove('open'); bIA.classList.remove('active');
     }
 });
 
