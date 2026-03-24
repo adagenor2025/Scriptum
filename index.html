@@ -1191,27 +1191,9 @@ function aplicaIA(e) {
         ultimaEd.focus();
 
         // Adiciona quebra de linha
-        var br1 = document.createElement('br');
-        var br2 = document.createElement('br');
-        ultimaEd.appendChild(br1);
-        ultimaEd.appendChild(br2);
-
-        // Cria o rótulo
-        var rotulo = document.createElement('span');
-        rotulo.className = 'rotulo-resumo';
-        rotulo.contentEditable = 'false';
-        rotulo.innerText = 'Texto resumido';
-        ultimaEd.appendChild(rotulo);
-
-        // Quebra após o rótulo
-        var br3 = document.createElement('br');
-        ultimaEd.appendChild(br3);
-
-        // Texto do resumo
-        var textoNode = document.createTextNode(iaResultado);
+        var textoFinal = '\n\n*** TEXTO RESUMIDO ***\n' + iaResultado;
+        var textoNode = document.createTextNode(textoFinal);
         ultimaEd.appendChild(textoNode);
-
-        // Move cursor para o final
         var range = document.createRange();
         range.setStartAfter(textoNode);
         range.collapse(true);
@@ -1221,34 +1203,19 @@ function aplicaIA(e) {
 
     } else {
         // Corrigir / Reescrever — insere com rótulo
-        var rotuloTxt = iaModo === 'corrigir' ? 'Texto com correção gramatical' :
-                         iaModo === 'traduzir'  ? 'Texto traduzido para inglês'    : 'Reescrita do trecho';
+        var rotuloTxt = iaModo === 'corrigir' ? '*** TEXTO COM CORREÇÃO GRAMATICAL ***' :
+                         iaModo === 'traduzir'  ? '*** TEXTO TRADUZIDO PARA INGLÊS ***'   : '*** REESCRITA DO TRECHO ***';
 
         ultimaEd.focus();
-
-        var br1 = document.createElement('br');
-        var br2 = document.createElement('br');
-        ultimaEd.appendChild(br1);
-        ultimaEd.appendChild(br2);
-
-        var rotulo = document.createElement('span');
-        rotulo.className = 'rotulo-resumo';
-        rotulo.contentEditable = 'false';
-        rotulo.innerText = rotuloTxt;
-        ultimaEd.appendChild(rotulo);
-
-        var br3 = document.createElement('br');
-        ultimaEd.appendChild(br3);
-
-        var textoNode = document.createTextNode(iaResultado);
-        ultimaEd.appendChild(textoNode);
-
-        var range = document.createRange();
-        range.setStartAfter(textoNode);
-        range.collapse(true);
+        var textoFinal2 = '\n\n' + rotuloTxt + '\n' + iaResultado;
+        var textoNode2  = document.createTextNode(textoFinal2);
+        ultimaEd.appendChild(textoNode2);
+        var range2 = document.createRange();
+        range2.setStartAfter(textoNode2);
+        range2.collapse(true);
         var sel2 = window.getSelection();
         sel2.removeAllRanges();
-        sel2.addRange(range);
+        sel2.addRange(range2);
     }
 
     if (lastFocus) checaOverflow(lastFocus);
