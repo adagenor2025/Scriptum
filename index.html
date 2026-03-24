@@ -1186,37 +1186,23 @@ function aplicaIA(e) {
 
     var ultimaEd = pageList[pageList.length - 1];
 
-    if (iaModo === 'resumir') {
-        // Insere rótulo + resumo no final do documento
-        ultimaEd.focus();
+    var rotuloTxt = iaModo === 'resumir'    ? '*** TEXTO RESUMIDO ***'                :
+                    iaModo === 'corrigir'   ? '*** TEXTO COM CORRECAO GRAMATICAL ***' :
+                    iaModo === 'traduzir'   ? '*** TEXTO TRADUZIDO PARA INGLES ***'   :
+                                             '*** REESCRITA DO TRECHO ***';
 
-        // Adiciona quebra de linha
-        var textoFinal = '\n\n*** TEXTO RESUMIDO ***\n' + iaResultado;
-        var textoNode = document.createTextNode(textoFinal);
-        ultimaEd.appendChild(textoNode);
+    ultimaEd.innerText = ultimaEd.innerText + '\n\n' + rotuloTxt + '\n' + iaResultado;
+    ultimaEd.focus();
+
+    // Move cursor para o final
+    try {
         var range = document.createRange();
-        range.setStartAfter(textoNode);
-        range.collapse(true);
+        range.selectNodeContents(ultimaEd);
+        range.collapse(false);
         var sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-
-    } else {
-        // Corrigir / Reescrever — insere com rótulo
-        var rotuloTxt = iaModo === 'corrigir' ? '*** TEXTO COM CORREÇÃO GRAMATICAL ***' :
-                         iaModo === 'traduzir'  ? '*** TEXTO TRADUZIDO PARA INGLÊS ***'   : '*** REESCRITA DO TRECHO ***';
-
-        ultimaEd.focus();
-        var textoFinal2 = '\n\n' + rotuloTxt + '\n' + iaResultado;
-        var textoNode2  = document.createTextNode(textoFinal2);
-        ultimaEd.appendChild(textoNode2);
-        var range2 = document.createRange();
-        range2.setStartAfter(textoNode2);
-        range2.collapse(true);
-        var sel2 = window.getSelection();
-        sel2.removeAllRanges();
-        sel2.addRange(range2);
-    }
+    } catch(e) {}
 
     if (lastFocus) checaOverflow(lastFocus);
     stats();
