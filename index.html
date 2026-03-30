@@ -8,6 +8,15 @@
 <!-- Scriptum v3.0 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scriptum v3.0</title>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3MBDM9JPSB"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3MBDM9JPSB');
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -629,7 +638,7 @@ mark.destaque.atual {
         <div id="mbox-title"><span id="sobre-titulo">Sobre o Scriptum</span></div>
         <div id="mbox-body">
             <p class="app-name">Scriptum</p>
-            <p class="version" id="sobre-versao">Editor Minimalista &mdash; v1.0</p>
+            <p class="version" id="sobre-versao">Editor Minimalista &mdash; v3.0</p>
             <div class="sep"></div>
             <p><b>Prof. Dr. Adagenor Lobato Ribeiro</b></p>
             <p id="sobre-univ">Universidade Federal do Par&aacute; &mdash; UFPA</p>
@@ -637,7 +646,11 @@ mark.destaque.atual {
             <p id="sobre-icen">Faculdade de Computa&ccedil;&atilde;o &mdash; ICEN</p>
         </div>
         <div id="mbox-footer">
-            <button id="mclose" onmousedown="fechaModal(event)" id="sobre-ok">OK</button>
+            <div style="text-align:center;margin-top:12px;">
+                <img src="https://hits.sh/adagenor2025.github.io/Scriptum.svg?label=Visitas&color=1a4fa0&labelColor=333"
+                     alt="Contador de visitas" style="height:20px;display:block;margin:0 auto 12px auto;">
+                <button id="mclose" onmousedown="fechaModal(event)">Fechar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -1948,7 +1961,7 @@ var IDIOMAS = {
           dark:'Modo escuro', full:'Tela cheia', numerar:'Numerar páginas',
           iaCorrigir:'Corrigir gramática', iaResumir:'Resumir documento',
           iaReescrever:'Reescrever trecho', iaTraduzir:'Traduzir...', iaTraduzirMenu:'Traduzir para...', iaTraduzirLabel:'Idioma de destino:', nomesDestino:['Inglés', 'Español', 'Francés', 'Alemán', 'Italiano', 'Ruso', 'Japonés', 'Portugués'], nomesDestino:['Inglês', 'Espanhol', 'Francês', 'Alemão', 'Italiano', 'Russo', 'Japonês', 'Português'],
-          sobreTitulo:'Sobre o Scriptum', sobreVersao:'Editor Minimalista', sobreUniv:'Universidade Federal do Pará — UFPA', sobreNaea:'Núcleo de Altos Estudos Amazônicos — NAEA', sobreIcen:'Faculdade de Computação — ICEN', sobreAutor:'Autor', sobreFechar:'Fechar',
+          sobreTitulo:'Sobre o Scriptum', sobreVersao:'Editor Minimalista v3.0', sobreUniv:'Universidade Federal do Pará — UFPA', sobreNaea:'Núcleo de Altos Estudos Amazônicos — NAEA', sobreIcen:'Faculdade de Computação — ICEN', sobreAutor:'Autor', sobreFechar:'Fechar',
           iaConfig:'Configurar chave API...' },
     en: { arquivo:'File', inserir:'Insert', editar:'Edit', encerrar:'Close',
           novo:'New', abrir:'Open...', salvar:'Save', salvarComo:'Save as...',
@@ -1959,7 +1972,7 @@ var IDIOMAS = {
           sel:'Select all', negrito:'Bold', italico:'Italic', sub:'Underline',
           dark:'Dark mode', full:'Full screen', numerar:'Number pages',
           iaCorrigir:'Fix grammar', iaResumir:'Summarize', iaReescrever:'Rewrite',
-          iaTraduzir:'Translate...', iaTraduzirMenu:'Translate to...', iaTraduzirLabel:'Target language:', nomesDestino:['English', 'Spanish', 'French', 'German', 'Italian', 'Russian', 'Japanese', 'Portuguese'], sobreTitulo:'About Scriptum', sobreVersao:'Minimalist Editor', sobreUniv:'Federal University of Pará — UFPA', sobreNaea:'Center for Advanced Amazonian Studies — NAEA', sobreIcen:'Faculty of Computing — ICEN', sobreAutor:'Author', sobreFechar:'Close', iaConfig:'Configure API key...' },
+          iaTraduzir:'Translate...', iaTraduzirMenu:'Translate to...', iaTraduzirLabel:'Target language:', nomesDestino:['English', 'Spanish', 'French', 'German', 'Italian', 'Russian', 'Japanese', 'Portuguese'], sobreTitulo:'About Scriptum', sobreVersao:'Minimalist Editor v3.0', sobreUniv:'Federal University of Pará — UFPA', sobreNaea:'Center for Advanced Amazonian Studies — NAEA', sobreIcen:'Faculty of Computing — ICEN', sobreAutor:'Author', sobreFechar:'Close', iaConfig:'Configure API key...' },
     es: { arquivo:'Archivo', inserir:'Insertar', editar:'Editar', encerrar:'Cerrar',
           novo:'Nuevo', abrir:'Abrir...', salvar:'Guardar', salvarComo:'Guardar como...',
           pdf:'Guardar como PDF...', docx:'Guardar como .docx...', sobre:'Acerca de...',
@@ -1969,7 +1982,7 @@ var IDIOMAS = {
           sel:'Seleccionar todo', negrito:'Negrita', italico:'Cursiva', sub:'Subrayado',
           dark:'Modo oscuro', full:'Pantalla completa', numerar:'Numerar páginas',
           iaCorrigir:'Corregir gramática', iaResumir:'Resumir', iaReescrever:'Reescribir',
-          iaTraduzir:'Traducir...', iaTraduzirMenu:'Traducir a...', iaTraduzirLabel:'Idioma de destino:', sobreTitulo:'Acerca de Scriptum', sobreVersao:'Editor Minimalista', sobreUniv:'Universidad Federal de Pará — UFPA', sobreNaea:'Núcleo de Altos Estudios Amazónicos — NAEA', sobreIcen:'Facultad de Computación — ICEN', sobreAutor:'Autor', sobreFechar:'Cerrar', iaConfig:'Configurar clave API...' },
+          iaTraduzir:'Traducir...', iaTraduzirMenu:'Traducir a...', iaTraduzirLabel:'Idioma de destino:', sobreTitulo:'Acerca de Scriptum', sobreVersao:'Editor Minimalista v3.0', sobreUniv:'Universidad Federal de Pará — UFPA', sobreNaea:'Núcleo de Altos Estudios Amazónicos — NAEA', sobreIcen:'Facultad de Computación — ICEN', sobreAutor:'Autor', sobreFechar:'Cerrar', iaConfig:'Configurar clave API...' },
     fr: { arquivo:'Fichier', inserir:'Insérer', editar:'Éditer', encerrar:'Fermer',
           novo:'Nouveau', abrir:'Ouvrir...', salvar:'Enregistrer', salvarComo:'Enregistrer sous...',
           pdf:'Enregistrer en PDF...', docx:'Enregistrer en .docx...', sobre:'À propos...',
@@ -1979,7 +1992,7 @@ var IDIOMAS = {
           sel:'Tout sélectionner', negrito:'Gras', italico:'Italique', sub:'Souligné',
           dark:'Mode sombre', full:'Plein écran', numerar:'Numéroter',
           iaCorrigir:'Corriger', iaResumir:'Résumer', iaReescrever:'Réécrire',
-          iaTraduzir:'Traduire...', iaTraduzirMenu:'Traduire vers...', iaTraduzirLabel:'Langue cible:', nomesDestino:['Anglais', 'Espagnol', 'Français', 'Allemand', 'Italien', 'Russe', 'Japonais', 'Portugais'], sobreTitulo:'À propos de Scriptum', sobreVersao:'Éditeur Minimaliste', sobreUniv:'Université Fédérale du Pará — UFPA', sobreNaea:'Centre des Hautes Études Amazoniennes — NAEA', sobreIcen:'Faculté de Informatique — ICEN', sobreAutor:'Auteur', sobreFechar:'Fermer', iaConfig:'Configurer la clé API...' },
+          iaTraduzir:'Traduire...', iaTraduzirMenu:'Traduire vers...', iaTraduzirLabel:'Langue cible:', nomesDestino:['Anglais', 'Espagnol', 'Français', 'Allemand', 'Italien', 'Russe', 'Japonais', 'Portugais'], sobreTitulo:'À propos de Scriptum', sobreVersao:'Editor Minimalista v3.0', sobreUniv:'Université Fédérale du Pará — UFPA', sobreNaea:'Centre des Hautes Études Amazoniennes — NAEA', sobreIcen:'Faculté de Informatique — ICEN', sobreAutor:'Auteur', sobreFechar:'Fermer', iaConfig:'Configurer la clé API...' },
     de: { arquivo:'Datei', inserir:'Einfügen', editar:'Bearbeiten', encerrar:'Schließen',
           novo:'Neu', abrir:'Öffnen...', salvar:'Speichern', salvarComo:'Speichern unter...',
           pdf:'Als PDF...', docx:'Als .docx...', sobre:'Über Scriptum...',
@@ -1989,7 +2002,7 @@ var IDIOMAS = {
           sel:'Alles auswählen', negrito:'Fett', italico:'Kursiv', sub:'Unterstrichen',
           dark:'Dunkelmodus', full:'Vollbild', numerar:'Seitenzahlen',
           iaCorrigir:'Grammatik', iaResumir:'Zusammenfassen', iaReescrever:'Umschreiben',
-          iaTraduzir:'Übersetzen...', iaTraduzirMenu:'Übersetzen nach...', iaTraduzirLabel:'Zielsprache:', nomesDestino:['Englisch', 'Spanisch', 'Französisch', 'Deutsch', 'Italienisch', 'Russisch', 'Japanisch', 'Portugiesisch'], sobreTitulo:'Über Scriptum', sobreVersao:'Minimalistischer Editor', sobreUniv:'Bundesuniversität Pará — UFPA', sobreNaea:'Zentrum für Amazonas-Hochstudien — NAEA', sobreIcen:'Fachbereich Informatik — ICEN', sobreAutor:'Autor', sobreFechar:'Schließen', iaConfig:'API-Schlüssel...' },
+          iaTraduzir:'Übersetzen...', iaTraduzirMenu:'Übersetzen nach...', iaTraduzirLabel:'Zielsprache:', nomesDestino:['Englisch', 'Spanisch', 'Französisch', 'Deutsch', 'Italienisch', 'Russisch', 'Japanisch', 'Portugiesisch'], sobreTitulo:'Über Scriptum', sobreVersao:'Editor Minimalista v3.0', sobreUniv:'Bundesuniversität Pará — UFPA', sobreNaea:'Zentrum für Amazonas-Hochstudien — NAEA', sobreIcen:'Fachbereich Informatik — ICEN', sobreAutor:'Autor', sobreFechar:'Schließen', iaConfig:'API-Schlüssel...' },
     it: { arquivo:'File', inserir:'Inserisci', editar:'Modifica', encerrar:'Chiudi',
           novo:'Nuovo', abrir:'Apri...', salvar:'Salva', salvarComo:'Salva con nome...',
           pdf:'Salva come PDF...', docx:'Salva come .docx...', sobre:'Informazioni...',
@@ -1999,7 +2012,7 @@ var IDIOMAS = {
           sel:'Seleziona tutto', negrito:'Grassetto', italico:'Corsivo', sub:'Sottolineato',
           dark:'Modalità scura', full:'Schermo intero', numerar:'Numera pagine',
           iaCorrigir:'Correggere grammatica', iaResumir:'Riassumere', iaReescrever:'Riscrivere',
-          iaTraduzir:'Tradurre...', iaTraduzirMenu:'Tradurre in...', iaTraduzirLabel:'Lingua di destinazione:', nomesDestino:['Inglese', 'Spagnolo', 'Francese', 'Tedesco', 'Italiano', 'Russo', 'Giapponese', 'Portoghese'], sobreTitulo:'Informazioni su Scriptum', sobreVersao:'Editor Minimalista', sobreUniv:'Università Federale del Pará — UFPA', sobreNaea:'Nucleo di Alti Studi Amazzonici — NAEA', sobreIcen:'Facoltà di Informatica — ICEN', sobreAutor:'Autore', sobreFechar:'Chiudi', iaConfig:'Configura chiave API...' },
+          iaTraduzir:'Tradurre...', iaTraduzirMenu:'Tradurre in...', iaTraduzirLabel:'Lingua di destinazione:', nomesDestino:['Inglese', 'Spagnolo', 'Francese', 'Tedesco', 'Italiano', 'Russo', 'Giapponese', 'Portoghese'], sobreTitulo:'Informazioni su Scriptum', sobreVersao:'Editor Minimalista v3.0', sobreUniv:'Università Federale del Pará — UFPA', sobreNaea:'Nucleo di Alti Studi Amazzonici — NAEA', sobreIcen:'Facoltà di Informatica — ICEN', sobreAutor:'Autore', sobreFechar:'Chiudi', iaConfig:'Configura chiave API...' },
     ru: { arquivo:'Файл', inserir:'Вставка', editar:'Правка', encerrar:'Закрыть',
           novo:'Новый', abrir:'Открыть...', salvar:'Сохранить', salvarComo:'Сохранить как...',
           pdf:'Сохранить как PDF...', docx:'Сохранить как .docx...', sobre:'О программе...',
@@ -2009,7 +2022,7 @@ var IDIOMAS = {
           sel:'Выделить всё', negrito:'Жирный', italico:'Курсив', sub:'Подчёркнутый',
           dark:'Тёмный режим', full:'Полный экран', numerar:'Нумерация страниц',
           iaCorrigir:'Исправить грамматику', iaResumir:'Резюмировать', iaReescrever:'Переписать',
-          iaTraduzir:'Перевести...', iaTraduzirMenu:'Перевести на...', iaTraduzirLabel:'Язык перевода:', nomesDestino:['Английский', 'Испанский', 'Французский', 'Немецкий', 'Итальянский', 'Русский', 'Японский', 'Португальский'], sobreTitulo:'О Scriptum', sobreVersao:'Минималистичный редактор', sobreUniv:'Федеральный университет Пара — UFPA', sobreNaea:'Центр амазонских исследований — NAEA', sobreIcen:'Факультет информатики — ICEN', sobreAutor:'Автор', sobreFechar:'Закрыть', iaConfig:'Настроить ключ API...' },
+          iaTraduzir:'Перевести...', iaTraduzirMenu:'Перевести на...', iaTraduzirLabel:'Язык перевода:', nomesDestino:['Английский', 'Испанский', 'Французский', 'Немецкий', 'Итальянский', 'Русский', 'Японский', 'Португальский'], sobreTitulo:'О Scriptum', sobreVersao:'Editor Minimalista v3.0', sobreUniv:'Федеральный университет Пара — UFPA', sobreNaea:'Центр амазонских исследований — NAEA', sobreIcen:'Факультет информатики — ICEN', sobreAutor:'Автор', sobreFechar:'Закрыть', iaConfig:'Настроить ключ API...' },
     ja: { arquivo:'ファイル', inserir:'挿入', editar:'編集', encerrar:'閉じる',
           novo:'新規', abrir:'開く...', salvar:'保存', salvarComo:'名前を付けて保存...',
           pdf:'PDFとして...', docx:'.docxとして...', sobre:'Scriptumについて...',
@@ -2019,7 +2032,7 @@ var IDIOMAS = {
           sel:'すべて選択', negrito:'太字', italico:'斜体', sub:'下線',
           dark:'ダークモード', full:'全画面', numerar:'ページ番号',
           iaCorrigir:'文法修正', iaResumir:'要約', iaReescrever:'書き直し',
-          iaTraduzir:'翻訳...', iaTraduzirMenu:'翻訳先...', iaTraduzirLabel:'翻訳先言語:', nomesDestino:['英語', 'スペイン語', 'フランス語', 'ドイツ語', 'イタリア語', 'ロシア語', '日本語', 'ポルトガル語'], sobreTitulo:'Scriptumについて', sobreVersao:'ミニマリストエディタ', sobreUniv:'パラ連邦大学 — UFPA', sobreNaea:'アマゾン高等研究センター — NAEA', sobreIcen:'コンピュータ学部 — ICEN', sobreAutor:'著者', sobreFechar:'閉じる', iaConfig:'APIキー設定...' }
+          iaTraduzir:'翻訳...', iaTraduzirMenu:'翻訳先...', iaTraduzirLabel:'翻訳先言語:', nomesDestino:['英語', 'スペイン語', 'フランス語', 'ドイツ語', 'イタリア語', 'ロシア語', '日本語', 'ポルトガル語'], sobreTitulo:'Scriptumについて', sobreVersao:'Editor Minimalista v3.0', sobreUniv:'パラ連邦大学 — UFPA', sobreNaea:'アマゾン高等研究センター — NAEA', sobreIcen:'コンピュータ学部 — ICEN', sobreAutor:'著者', sobreFechar:'閉じる', iaConfig:'APIキー設定...' }
 };
 
 var idiomaAtual = localStorage.getItem('scriptum_idioma') || 'pt';
@@ -2058,7 +2071,7 @@ function trocaIdioma(lang) {
     var st = document.getElementById('sobre-titulo');
     if (st) st.innerText = T.sobreTitulo;
     var sv = document.getElementById('sobre-versao');
-    if (sv) sv.innerHTML = T.sobreVersao + ' &mdash; v1.0';
+    if (sv) sv.innerHTML = T.sobreVersao;
     var su = document.getElementById('sobre-univ');
     if (su) su.innerText = T.sobreUniv;
     var sn = document.getElementById('sobre-naea');
