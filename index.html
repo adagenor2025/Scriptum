@@ -910,13 +910,13 @@ mark.destaque.atual { background:#ff9900; color:#fff; }
 
   </div>
   <div id="tut-footer">
-    <button class="tut-fbtn inv" id="tut-ant">&#8592; Anterior</button>
+    <button class="tut-fbtn inv" id="tut-ant"><span id="tut-ant-txt">← Anterior</span></button>
     <span class="tut-prog" id="tut-prog">1 de 6</span>
     <div style="display:flex;gap:8px;align-items:center;">
       <button class="tut-fbtn" id="tut-imprimir" onmousedown="imprimeTutorial(event)" title="Imprimir tutorial em PDF">
         <svg width="11" height="11" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><line x1="6.5" y1="1" x2="6.5" y2="8.5"/><polyline points="3.5,6 6.5,9.5 9.5,6"/><line x1="1" y1="12" x2="12" y2="12"/></svg>PDF
       </button>
-      <button class="tut-fbtn ok" id="tut-prox">Pr&oacute;ximo &rarr;</button>
+      <button class="tut-fbtn ok" id="tut-prox"><span id="tut-prox-txt">Próximo →</span></button>
     </div>
   </div>
 </div>
@@ -1205,8 +1205,7 @@ mark.destaque.atual { background:#ff9900; color:#fff; }
         overlay.classList.add('saindo');
         setTimeout(function() {
             overlay.style.display = 'none';
-            verificaTutorial();
-            if (pageList && pageList.length && !document.getElementById('tut-overlay').classList.contains('visivel')) pageList[0].focus();
+            if (pageList && pageList.length) pageList[0].focus();
         }, 950);
     }
 
@@ -2231,6 +2230,7 @@ function trocaIdioma(lang) {
     var si=document.getElementById('sobre-icen');if(si&&T.sobreIcen)si.innerText=T.sobreIcen;
     var mc=document.getElementById('mclose');if(mc)mc.innerText=T.sobreFechar;
     var sel2=document.getElementById('sel-lang');if(sel2)sel2.value=lang;
+    atualizaTutorialIdioma(lang);
     toast(lang.toUpperCase());
 }
 document.addEventListener('DOMContentLoaded', function() { trocaIdioma(idiomaAtual); });
@@ -2340,7 +2340,6 @@ function fechaTutorial() {
     setTimeout(function() {
         ov.classList.remove('visivel');
         ov.classList.remove('saindo');
-        localStorage.setItem('scriptum_tutorial_visto', '1');
         var tbtn = document.getElementById('btn-tutorial');
         if (tbtn) tbtn.classList.remove('ativo');
         if (pageList && pageList.length) pageList[0].focus();
@@ -2355,7 +2354,11 @@ function tutIrPara(n) {
     var ant  = document.getElementById('tut-ant');
     var prox = document.getElementById('tut-prox');
     ant.className  = 'tut-fbtn' + (tutAtual === 1 ? ' inv' : '');
-    prox.innerHTML = tutAtual === tutTotal ? '&#10003; Vamos escrever' : 'Pr&oacute;ximo &rarr;';
+    var Tt = TUT_TEXTOS[idiomaAtual] || TUT_TEXTOS['pt'];
+    var txtAnt = document.getElementById('tut-ant-txt');
+    var txtProx = document.getElementById('tut-prox-txt');
+    if (txtAnt)  txtAnt.innerText  = '← ' + Tt.anterior.replace('&#8592; ','');
+    if (txtProx) txtProx.innerText = tutAtual === tutTotal ? '✓ ' + Tt.concluir.replace('&#10003; ','') : Tt.proximo.replace(' &rarr;','') + ' →';
     prox.className = 'tut-fbtn ok';
     // Dots
     var bar = document.getElementById('tut-dots-bar');
@@ -2378,13 +2381,29 @@ document.getElementById('tut-ant').addEventListener('mousedown', function(e) {
     if (tutAtual > 1) tutIrPara(tutAtual - 1);
 });
 
-// Abre automaticamente na primeira visita, após a splash
-function verificaTutorial() {
-    if (!localStorage.getItem('scriptum_tutorial_visto')) {
-        setTimeout(abreTutorial, 1000);
-    }
-}
 
+var TUT_TEXTOS = {"pt": {"titulo": "Tutorial de uso", "passos": [{"num": "passo 1 de 6", "titulo": "A p&aacute;gina em branco", "texto": "O Scriptum cria p&aacute;ginas no formato <strong>A4</strong> automaticamente. Quando o texto chega ao fim, a pr&oacute;xima aparece &mdash; como um caderno que nunca acaba."}, {"num": "passo 2 de 6", "titulo": "Formatar o texto", "texto": "Selecione uma palavra e use os bot&otilde;es da barra ou os atalhos: <code>Ctrl+B</code> negrito, <code>Ctrl+I</code> it&aacute;lico, <code>Ctrl+U</code> sublinhado."}, {"num": "passo 3 de 6", "titulo": "Salvar o texto", "texto": "Use <strong>Arquivo &rarr; Salvar</strong> ou <code>Ctrl+S</code>. Tamb&eacute;m &eacute; poss&iacute;vel salvar em <strong>PDF</strong> ou <strong>Word (.docx)</strong> &mdash; pronto para imprimir ou enviar."}, {"num": "passo 4 de 6", "titulo": "Imprimir e gerar PDF", "texto": "V&aacute; em <strong>Arquivo &rarr; Salvar como PDF</strong> ou pressione <code>Ctrl+P</code>. O documento sai formatado em A4, pronto para a impressora."}, {"num": "passo 5 de 6", "titulo": "A intelig&ecirc;ncia artificial", "texto": "O menu <strong>IA</strong> corrige erros, resume, reescreve e traduz. Selecione um trecho ou deixe em branco para usar o documento inteiro.<br><span style=\"font-size:13px;color:#aaa;\">Requer conex&atilde;o com a internet.</span>"}, {"num": "passo 6 de 6", "titulo": "Pronto para escrever", "texto": "O Scriptum &eacute; seu. <strong>Escreva sem medo</strong> &mdash; o texto &eacute; salvo automaticamente. Este tutorial est&aacute; sempre dispon&iacute;vel pelo bot&atilde;o <strong>?</strong> na barra de menu."}], "anterior": "← Anterior", "proximo": "Próximo →", "concluir": "✓ Vamos escrever", "pdf": "PDF"}, "en": {"titulo": "User guide", "passos": [{"num": "step 1 of 6", "titulo": "The blank page", "texto": "Scriptum creates <strong>A4</strong> pages automatically. When the text reaches the end, the next page appears &mdash; like a notebook that never runs out."}, {"num": "step 2 of 6", "titulo": "Formatting text", "texto": "Select a word and use the toolbar buttons or shortcuts: <code>Ctrl+B</code> bold, <code>Ctrl+I</code> italic, <code>Ctrl+U</code> underline."}, {"num": "step 3 of 6", "titulo": "Saving your text", "texto": "Use <strong>File &rarr; Save</strong> or <code>Ctrl+S</code>. You can also save as <strong>PDF</strong> or <strong>Word (.docx)</strong> &mdash; ready to print or send."}, {"num": "step 4 of 6", "titulo": "Print and PDF", "texto": "Go to <strong>File &rarr; Save as PDF</strong> or press <code>Ctrl+P</code>. The document is formatted in A4, ready for the printer."}, {"num": "step 5 of 6", "titulo": "Artificial intelligence", "texto": "The <strong>AI</strong> menu fixes errors, summarizes, rewrites and translates. Select a passage or leave blank to use the entire document.<br><span style=\"font-size:13px;color:#aaa;\">Requires internet connection.</span>"}, {"num": "step 6 of 6", "titulo": "Ready to write", "texto": "Scriptum is yours. <strong>Write freely</strong> &mdash; your text is saved automatically. This guide is always available via the <strong>?</strong> button in the menu bar."}], "anterior": "← Previous", "proximo": "Next →", "concluir": "✓ Let's write", "pdf": "PDF"}, "es": {"titulo": "Tutorial de uso", "passos": [{"num": "paso 1 de 6", "titulo": "La p&aacute;gina en blanco", "texto": "Scriptum crea p&aacute;ginas en formato <strong>A4</strong> autom&aacute;ticamente. Cuando el texto llega al final, aparece la siguiente &mdash; como un cuaderno sin fin."}, {"num": "paso 2 de 6", "titulo": "Dar formato al texto", "texto": "Seleccione una palabra y use los botones de la barra o los atajos: <code>Ctrl+B</code> negrita, <code>Ctrl+I</code> cursiva, <code>Ctrl+U</code> subrayado."}, {"num": "paso 3 de 6", "titulo": "Guardar el texto", "texto": "Use <strong>Archivo &rarr; Guardar</strong> o <code>Ctrl+S</code>. Tambi&eacute;n puede guardar en <strong>PDF</strong> o <strong>Word (.docx)</strong> &mdash; listo para imprimir o enviar."}, {"num": "paso 4 de 6", "titulo": "Imprimir y generar PDF", "texto": "Vaya a <strong>Archivo &rarr; Guardar como PDF</strong> o presione <code>Ctrl+P</code>. El documento sale formateado en A4, listo para la impresora."}, {"num": "paso 5 de 6", "titulo": "La inteligencia artificial", "texto": "El men&uacute; <strong>IA</strong> corrige errores, resume, reescribe y traduce. Seleccione un fragmento o d&eacute;jelo en blanco para usar el documento completo.<br><span style=\"font-size:13px;color:#aaa;\">Requiere conexi&oacute;n a internet.</span>"}, {"num": "paso 6 de 6", "titulo": "Listo para escribir", "texto": "Scriptum es suyo. <strong>Escriba sin miedo</strong> &mdash; el texto se guarda autom&aacute;ticamente. Este tutorial siempre est&aacute; disponible con el bot&oacute;n <strong>?</strong> en la barra de men&uacute;."}], "anterior": "← Anterior", "proximo": "Siguiente →", "concluir": "✓ Vamos a escribir", "pdf": "PDF"}, "fr": {"titulo": "Guide d'utilisation", "passos": [{"num": "étape 1 sur 6", "titulo": "La page blanche", "texto": "Scriptum cr&eacute;e des pages au format <strong>A4</strong> automatiquement. Quand le texte arrive &agrave; la fin, la suivante appara&icirc;t &mdash; comme un cahier sans fin."}, {"num": "étape 2 sur 6", "titulo": "Mettre en forme", "texto": "S&eacute;lectionnez un mot et utilisez les boutons ou les raccourcis&nbsp;: <code>Ctrl+B</code> gras, <code>Ctrl+I</code> italique, <code>Ctrl+U</code> soulign&eacute;."}, {"num": "étape 3 sur 6", "titulo": "Enregistrer le texte", "texto": "Utilisez <strong>Fichier &rarr; Enregistrer</strong> ou <code>Ctrl+S</code>. Vous pouvez aussi enregistrer en <strong>PDF</strong> ou <strong>Word (.docx)</strong>."}, {"num": "étape 4 sur 6", "titulo": "Imprimer et PDF", "texto": "Allez dans <strong>Fichier &rarr; Enregistrer en PDF</strong> ou appuyez sur <code>Ctrl+P</code>. Le document est format&eacute; en A4, pr&ecirc;t &agrave; imprimer."}, {"num": "étape 5 sur 6", "titulo": "L'intelligence artificielle", "texto": "Le menu <strong>IA</strong> corrige, r&eacute;sume, r&eacute;&eacute;crit et traduit. S&eacute;lectionnez un passage ou laissez vide pour utiliser tout le document.<br><span style=\"font-size:13px;color:#aaa;\">N&eacute;cessite une connexion internet.</span>"}, {"num": "étape 6 sur 6", "titulo": "Prêt à écrire", "texto": "Scriptum est &agrave; vous. <strong>&Eacute;crivez librement</strong> &mdash; le texte est sauvegard&eacute; automatiquement. Ce guide est toujours accessible via le bouton <strong>?</strong>."}], "anterior": "← Précédent", "proximo": "Suivant →", "concluir": "✓ Écrivons", "pdf": "PDF"}, "de": {"titulo": "Anleitung", "passos": [{"num": "Schritt 1 von 6", "titulo": "Die leere Seite", "texto": "Scriptum erstellt <strong>A4</strong>-Seiten automatisch. Wenn der Text das Ende erreicht, erscheint die n&auml;chste Seite &mdash; wie ein endloses Heft."}, {"num": "Schritt 2 von 6", "titulo": "Text formatieren", "texto": "W&auml;hlen Sie ein Wort aus und nutzen Sie die Symbolleiste oder Tastenkürzel: <code>Ctrl+B</code> fett, <code>Ctrl+I</code> kursiv, <code>Ctrl+U</code> unterstrichen."}, {"num": "Schritt 3 von 6", "titulo": "Text speichern", "texto": "Nutzen Sie <strong>Datei &rarr; Speichern</strong> oder <code>Ctrl+S</code>. Sie k&ouml;nnen auch als <strong>PDF</strong> oder <strong>Word (.docx)</strong> speichern."}, {"num": "Schritt 4 von 6", "titulo": "Drucken und PDF", "texto": "Gehen Sie zu <strong>Datei &rarr; Als PDF</strong> oder dr&uuml;cken Sie <code>Ctrl+P</code>. Das Dokument wird im A4-Format ausgegeben."}, {"num": "Schritt 5 von 6", "titulo": "K&uuml;nstliche Intelligenz", "texto": "Das <strong>KI</strong>-Men&uuml; korrigiert, fasst zusammen, schreibt um und &uuml;bersetzt. W&auml;hlen Sie einen Abschnitt oder lassen Sie es leer f&uuml;r das gesamte Dokument.<br><span style=\"font-size:13px;color:#aaa;\">Erfordert Internetverbindung.</span>"}, {"num": "Schritt 6 von 6", "titulo": "Bereit zum Schreiben", "texto": "Scriptum geh&ouml;rt Ihnen. <strong>Schreiben Sie frei</strong> &mdash; der Text wird automatisch gespeichert. Diese Anleitung ist &uuml;ber die <strong>?</strong>-Schaltfl&auml;che erreichbar."}], "anterior": "← Zurück", "proximo": "Weiter →", "concluir": "✓ Los geht's", "pdf": "PDF"}, "it": {"titulo": "Guida all'uso", "passos": [{"num": "passo 1 di 6", "titulo": "La pagina bianca", "texto": "Scriptum crea pagine in formato <strong>A4</strong> automaticamente. Quando il testo raggiunge la fine, appare la pagina successiva &mdash; come un quaderno infinito."}, {"num": "passo 2 di 6", "titulo": "Formattare il testo", "texto": "Seleziona una parola e usa i pulsanti della barra o le scorciatoie: <code>Ctrl+B</code> grassetto, <code>Ctrl+I</code> corsivo, <code>Ctrl+U</code> sottolineato."}, {"num": "passo 3 di 6", "titulo": "Salvare il testo", "texto": "Usa <strong>File &rarr; Salva</strong> o <code>Ctrl+S</code>. Puoi anche salvare come <strong>PDF</strong> o <strong>Word (.docx)</strong> &mdash; pronto per stampare o inviare."}, {"num": "passo 4 di 6", "titulo": "Stampare e PDF", "texto": "Vai su <strong>File &rarr; Salva come PDF</strong> o premi <code>Ctrl+P</code>. Il documento esce in formato A4, pronto per la stampante."}, {"num": "passo 5 di 6", "titulo": "L'intelligenza artificiale", "texto": "Il menu <strong>IA</strong> corregge, riassume, riscrive e traduce. Seleziona un brano o lascia vuoto per usare l'intero documento.<br><span style=\"font-size:13px;color:#aaa;\">Richiede connessione internet.</span>"}, {"num": "passo 6 di 6", "titulo": "Pronto a scrivere", "texto": "Scriptum &egrave; tuo. <strong>Scrivi liberamente</strong> &mdash; il testo viene salvato automaticamente. Questa guida &egrave; sempre disponibile tramite il pulsante <strong>?</strong>."}], "anterior": "← Precedente", "proximo": "Successivo →", "concluir": "✓ Scriviamo", "pdf": "PDF"}, "ru": {"titulo": "Руководство", "passos": [{"num": "шаг 1 из 6", "titulo": "Чистая страница", "texto": "Scriptum автоматически создаёт страницы формата <strong>A4</strong>. Когда текст доходит до конца, появляется следующая страница &mdash; как бесконечная тетрадь."}, {"num": "шаг 2 из 6", "titulo": "Форматирование", "texto": "Выделите слово и используйте кнопки панели или сочетания клавиш: <code>Ctrl+B</code> жирный, <code>Ctrl+I</code> курсив, <code>Ctrl+U</code> подчёркнутый."}, {"num": "шаг 3 из 6", "titulo": "Сохранение текста", "texto": "Используйте <strong>Файл &rarr; Сохранить</strong> или <code>Ctrl+S</code>. Можно также сохранить как <strong>PDF</strong> или <strong>Word (.docx)</strong>."}, {"num": "шаг 4 из 6", "titulo": "Печать и PDF", "texto": "Перейдите в <strong>Файл &rarr; Сохранить как PDF</strong> или нажмите <code>Ctrl+P</code>. Документ выйдет в формате A4, готовый к печати."}, {"num": "шаг 5 из 6", "titulo": "Искусственный интеллект", "texto": "Меню <strong>ИИ</strong> исправляет ошибки, резюмирует, переписывает и переводит. Выделите фрагмент или оставьте пустым для всего документа.<br><span style=\"font-size:13px;color:#aaa;\">Требует подключения к интернету.</span>"}, {"num": "шаг 6 из 6", "titulo": "Готово к написанию", "texto": "Scriptum ваш. <strong>Пишите свободно</strong> &mdash; текст сохраняется автоматически. Это руководство всегда доступно через кнопку <strong>?</strong>."}], "anterior": "← Назад", "proximo": "Далее →", "concluir": "✓ Начнём писать", "pdf": "PDF"}, "ja": {"titulo": "使い方ガイド", "passos": [{"num": "ステップ 1 / 6", "titulo": "白紙のページ", "texto": "Scriptumは<strong>A4</strong>ページを自動的に作成します。テキストがページの終わりに達すると、次のページが現れます。"}, {"num": "ステップ 2 / 6", "titulo": "テキストの書式設定", "texto": "単語を選択してツールバーのボタンかショートカットを使用します: <code>Ctrl+B</code> 太字、<code>Ctrl+I</code> 斜体、<code>Ctrl+U</code> 下線。"}, {"num": "ステップ 3 / 6", "titulo": "テキストの保存", "texto": "<strong>ファイル &rarr; 保存</strong>または<code>Ctrl+S</code>を使用します。<strong>PDF</strong>や<strong>Word (.docx)</strong>として保存することもできます。"}, {"num": "ステップ 4 / 6", "titulo": "印刷とPDF", "texto": "<strong>ファイル &rarr; PDFとして</strong>に移動するか、<code>Ctrl+P</code>を押します。文書はA4形式で出力されます。"}, {"num": "ステップ 5 / 6", "titulo": "人工知能", "texto": "<strong>AI</strong>メニューは文法を修正し、要約し、書き直し、翻訳します。テキストを選択するか、空白のままにして文書全体を使用します。<br><span style=\"font-size:13px;color:#aaa;\">インターネット接続が必要です。</span>"}, {"num": "ステップ 6 / 6", "titulo": "書く準備完了", "texto": "Scriptumはあなたのものです。<strong>自由に書いてください</strong> &mdash; テキストは自動的に保存されます。このガイドはメニューバーの<strong>?</strong>ボタンからいつでも利用できます。"}], "anterior": "← 前へ", "proximo": "次へ →", "concluir": "✓ 書き始める", "pdf": "PDF"}};
+
+function atualizaTutorialIdioma(lang) {
+    var T = TUT_TEXTOS[lang] || TUT_TEXTOS['pt'];
+    // Título da janela
+    var tb = document.querySelector('#tut-titlebar span');
+    if (tb) tb.innerText = 'Scriptum — ' + T.titulo;
+    // Cada passo
+    T.passos.forEach(function(p, i) {
+        var n = i + 1;
+        var el = document.getElementById('tp' + n);
+        if (!el) return;
+        var num   = el.querySelector('.tut-num');
+        var tit   = el.querySelector('.tut-titulo');
+        var txt   = el.querySelector('.tut-txt');
+        if (num) num.innerText = p.num;
+        if (tit) tit.innerHTML = p.titulo;
+        if (txt) txt.innerHTML = p.texto;
+    });
+    // Botões de navegação — atualiza só o estado atual
+    tutIrPara(tutAtual);
+}
 // ══════════════════════════════════════════════════════
 // DETECÇÃO ONLINE / OFFLINE
 // ══════════════════════════════════════════════════════
